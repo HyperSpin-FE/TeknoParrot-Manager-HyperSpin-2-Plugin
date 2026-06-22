@@ -7,3 +7,7 @@ CLAUDE.md
 # User-specific generated files
 config.json
 *.log
+
+# .NET build output
+bin/
+obj/

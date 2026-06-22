@@ -1,0 +1,434 @@
+{
+  "id": "teknoparrot-tools",
+  "name": "TeknoParrot Tools",
+  "version": "0.1.0",
+  "changelog": "CHANGELOG.md",
+  "author": "HyperSpin Team",
+  "type": "executable",
+  "language": "C#",
+  "description": "Optional TeknoParrot setup and import helpers for validating UserProfiles, creating Arcade (TeknoParrot), and importing profile XMLs into HyperHQ.",
+  "platform": "Arcade",
+  "executable": "TeknoParrotToolsPlugin.exe",
+  "executableProviders": {
+    "windows": "TeknoParrotToolsPlugin.exe",
+    "linux": "TeknoParrotToolsPlugin"
+  },
+  "communication": {
+    "preferred": "socketio",
+    "fallback": "stdio",
+    "socketio": {
+      "enabled": true,
+      "autoReconnect": true,
+      "heartbeat": 30000,
+      "events": [
+        "dbConnected",
+        "systemChanged"
+      ],
+      "fileStreaming": false,
+      "dataRequests": true
+    }
+  },
+  "capabilities": [
+    {
+      "name": "teknoparrot-profile-scan",
+      "description": "Validate TeknoParrot UserProfiles XML files and common setup paths",
+      "required": true
+    },
+    {
+      "name": "game-import",
+      "description": "Create Arcade (TeknoParrot) and import UserProfiles XML files as launchable games",
+      "required": true
+    },
+    {
+      "name": "profile-backup",
+      "description": "Create timestamped backups before profile changes",
+      "required": false
+    }
+  ],
+  "permissions": [
+    {
+      "type": "file",
+      "scope": "teknoparrot-directory",
+      "description": "Read TeknoParrot UserProfiles, GameProfiles, Icons, and TeknoParrotUi.exe paths"
+    },
+    {
+      "type": "file",
+      "scope": "plugin-directory",
+      "description": "Write timestamped profile backups when requested"
+    },
+    {
+      "type": "database",
+      "scope": "systems-roms-emulators",
+      "description": "Create the Arcade (TeknoParrot) system, link TeknoParrot, and add profile XML games"
+    },
+    {
+      "type": "network",
+      "scope": "hyperhq-events",
+      "description": "Communicate import operations to HyperHQ through Socket.IO"
+    }
+  ],
+  "settings": [
+    {
+      "key": "teknoparrotRootPath",
+      "type": "string",
+      "label": "TeknoParrot Folder",
+      "description": "Folder containing TeknoParrotUi.exe, UserProfiles, GameProfiles, and Icons.",
+      "defaultValue": "",
+      "required": false
+    },
+    {
+      "key": "executablePath",
+      "type": "string",
+      "label": "TeknoParrotUi.exe",
+      "description": "Full path to TeknoParrotUi.exe. Leave empty to resolve from the TeknoParrot folder.",
+      "defaultValue": "",
+      "required": false
+    },
+    {
+      "key": "userProfilesPath",
+      "type": "string",
+      "label": "UserProfiles Folder",
+      "description": "Folder containing configured TeknoParrot user profile XML files.",
+      "defaultValue": "",
+      "required": false
+    },
+    {
+      "key": "gameProfilesPath",
+      "type": "string",
+      "label": "GameProfiles Folder",
+      "description": "Folder containing TeknoParrot's available game profile definitions.",
+      "defaultValue": "",
+      "required": false
+    },
+    {
+      "key": "gamesRootPath",
+      "type": "string",
+      "label": "Games Root Folder",
+      "description": "Folder containing extracted TeknoParrot game folders used for profile registration and GamePath repair.",
+      "defaultValue": "",
+      "required": false
+    },
+    {
+      "key": "iconsPath",
+      "type": "string",
+      "label": "Icons Folder",
+      "description": "Folder containing TeknoParrot icon files.",
+      "defaultValue": "",
+      "required": false
+    },
+    {
+      "key": "backupPath",
+      "type": "string",
+      "label": "Backup Folder",
+      "description": "Folder where TeknoParrot Tools stores timestamped profile backups.",
+      "defaultValue": "",
+      "required": false
+    },
+    {
+      "key": "downloadMedia",
+      "type": "boolean",
+      "label": "Download Media",
+      "description": "Allow HyperHQ to download game logos, artwork, backgrounds, and marquees for imported TeknoParrot games.",
+      "defaultValue": true
+    },
+    {
+      "key": "autoSyncOnDbConnect",
+      "type": "boolean",
+      "label": "Auto Sync on Database Connect",
+      "description": "Automatically sync TeknoParrot profile games when HyperHQ reports the database is ready.",
+      "defaultValue": false
+    }
+  ],
+  "actions": [
+    {
+      "id": "run_setup_wizard",
+      "label": "Run Setup Wizard",
+      "description": "Re-launch the TeknoParrot Tools setup wizard.",
+      "icon": "wand",
+      "type": "wizard",
+      "wizard_id": "teknoparrot-tools-setup",
+      "confirmation": false
+    },
+    {
+      "id": "health_check",
+      "label": "Health Check",
+      "description": "Validate TeknoParrot paths and profile readiness.",
+      "icon": "shield-check",
+      "type": "secondary",
+      "confirmation": false
+    },
+    {
+      "id": "scan_profiles",
+      "label": "Scan Profiles",
+      "description": "Validate configured TeknoParrot UserProfiles XML files.",
+      "icon": "search",
+      "type": "secondary",
+      "confirmation": false
+    },
+    {
+      "id": "preview_registration",
+      "label": "Preview Registration",
+      "description": "Dry-run TeknoParrot Manager-style profile registration from GameProfiles and extracted game folders.",
+      "icon": "eye",
+      "type": "secondary",
+      "confirmation": false
+    },
+    {
+      "id": "register_games",
+      "label": "Register Profiles",
+      "description": "Create missing UserProfiles XMLs from matching GameProfiles without overwriting existing profiles.",
+      "icon": "plus-circle",
+      "type": "primary",
+      "confirmation": true,
+      "confirmationMessage": "This will create missing UserProfiles XML files from GameProfiles and your games root folder. Existing profiles are backed up and not overwritten. Continue?"
+    },
+    {
+      "id": "repair_game_paths",
+      "label": "Repair Game Paths",
+      "description": "Repair broken or empty GamePath values when a unique executable match is found.",
+      "icon": "wrench",
+      "type": "secondary",
+      "confirmation": true,
+      "confirmationMessage": "This will update broken or empty GamePath values when a unique safe match is found. Existing profiles are backed up first. Continue?"
+    },
+    {
+      "id": "preview_sync",
+      "label": "Preview Import",
+      "description": "Build a dry-run HyperHQ import payload without changing the database.",
+      "icon": "eye",
+      "type": "secondary",
+      "confirmation": false
+    },
+    {
+      "id": "sync_games",
+      "label": "Sync Games",
+      "description": "Create Arcade (TeknoParrot), link TeknoParrot, and import configured profile XMLs.",
+      "icon": "sync",
+      "type": "primary",
+      "confirmation": true,
+      "confirmationMessage": "This will create or update Arcade (TeknoParrot), link the TeknoParrot launcher, and import configured profile XMLs. Continue?"
+    },
+    {
+      "id": "backup_profiles",
+      "label": "Backup Profiles",
+      "description": "Create a timestamped backup of UserProfiles XML files.",
+      "icon": "archive",
+      "type": "secondary",
+      "confirmation": false
+    },
+    {
+      "id": "restore_backup",
+      "label": "Restore Backup",
+      "description": "Restore UserProfiles XML files from a selected backup folder.",
+      "icon": "rotate-ccw",
+      "type": "secondary",
+      "confirmation": true,
+      "confirmationMessage": "This will restore UserProfiles XML files from the selected backup and create a pre-restore backup first. Continue?"
+    },
+    {
+      "id": "get_status",
+      "label": "Get Status",
+      "description": "Report TeknoParrot path, profile, and system readiness.",
+      "icon": "info",
+      "type": "secondary",
+      "confirmation": false
+    }
+  ],
+  "onboarding": {
+    "wizards": [
+      {
+        "id": "teknoparrot-tools-setup",
+        "title": "Set up TeknoParrot Tools",
+        "description": "Point HyperHQ at TeknoParrot, validate profiles, and preview the import before syncing.",
+        "completedTitle": "TeknoParrot Tools is ready",
+        "completedMessage": "Arcade (TeknoParrot) can now be synced from your UserProfiles folder.",
+        "skippable": true,
+        "autoStart": "first-run",
+        "theme": {
+          "accentColor": "#d21f3c",
+          "panelClass": "teknoparrot-tools-onboarding"
+        },
+        "steps": [
+          {
+            "id": "welcome",
+            "title": "TeknoParrot Tools",
+            "description": "This optional add-on validates TeknoParrot profiles, creates Arcade (TeknoParrot), and imports existing UserProfiles XML files into HyperHQ.",
+            "type": "info",
+            "buttonText": "Start setup",
+            "slides": [
+              {
+                "title": "Profile-based imports",
+                "description": "Configured UserProfiles XML files become launchable HyperHQ games without changing TeknoParrot itself.",
+                "icon": "folder_open"
+              },
+              {
+                "title": "Arcade system setup",
+                "description": "HyperHQ can create the canonical Arcade (TeknoParrot) system and TeknoParrot launcher mapping.",
+                "icon": "gamepad"
+              },
+              {
+                "title": "Backups before restore",
+                "description": "Profile backup and restore tools keep the TeknoParrot configuration recoverable.",
+                "icon": "archive"
+              }
+            ]
+          },
+          {
+            "id": "paths",
+            "title": "TeknoParrot Paths",
+            "description": "Choose the TeknoParrot folder or provide the UserProfiles path directly.",
+            "type": "form",
+            "buttonText": "Validate paths",
+            "executeOnNext": true,
+            "form": [
+              {
+                "key": "teknoparrotRootPath",
+                "type": "string",
+                "label": "TeknoParrot Folder",
+                "placeholder": "C:\\TeknoParrot",
+                "helpText": "Folder containing TeknoParrotUi.exe, UserProfiles, GameProfiles, and Icons.",
+                "required": false
+              },
+              {
+                "key": "executablePath",
+                "type": "string",
+                "label": "TeknoParrotUi.exe",
+                "placeholder": "C:\\TeknoParrot\\TeknoParrotUi.exe",
+                "required": false
+              },
+              {
+                "key": "userProfilesPath",
+                "type": "string",
+                "label": "UserProfiles Folder",
+                "placeholder": "C:\\TeknoParrot\\UserProfiles",
+                "required": false
+              },
+              {
+                "key": "gameProfilesPath",
+                "type": "string",
+                "label": "GameProfiles Folder",
+                "placeholder": "C:\\TeknoParrot\\GameProfiles",
+                "required": false
+              },
+              {
+                "key": "gamesRootPath",
+                "type": "string",
+                "label": "Games Root Folder",
+                "placeholder": "D:\\Arcade\\TeknoParrot",
+                "helpText": "Optional. Used to register missing UserProfiles and repair broken GamePath values.",
+                "required": false
+              },
+              {
+                "key": "iconsPath",
+                "type": "string",
+                "label": "Icons Folder",
+                "placeholder": "C:\\TeknoParrot\\Icons",
+                "required": false
+              },
+              {
+                "key": "backupPath",
+                "type": "string",
+                "label": "Backup Folder",
+                "placeholder": "C:\\TeknoParrot\\Backups\\HyperHQ",
+                "required": false
+              }
+            ]
+          },
+          {
+            "id": "import_options",
+            "title": "Choose import options",
+            "description": "Pick how HyperHQ should handle media and automatic sync for TeknoParrot profile imports.",
+            "type": "form",
+            "buttonText": "Save settings",
+            "executeOnNext": false,
+            "form": [
+              {
+                "key": "downloadMedia",
+                "type": "boolean",
+                "label": "Download media",
+                "description": "Allow HyperHQ to download game logos, artwork, backgrounds, and marquees for imported TeknoParrot games.",
+                "defaultValue": true
+              },
+              {
+                "key": "autoSyncOnDbConnect",
+                "type": "boolean",
+                "label": "Sync when database connects",
+                "description": "Automatically sync TeknoParrot profile games when HyperHQ reports the database is ready.",
+                "defaultValue": false
+              }
+            ]
+          },
+          {
+            "id": "register_games",
+            "title": "Register missing profiles",
+            "description": "When a games root folder is configured, HyperHQ can create missing UserProfiles from GameProfiles using the same no-overwrite registration idea as TeknoParrot Manager.",
+            "type": "async-action",
+            "buttonText": "Retry registration",
+            "successText": "Profile registration complete.",
+            "errorText": "Profile registration needs attention.",
+            "executeOnLoad": true,
+            "optional": true
+          },
+          {
+            "id": "scan_profiles",
+            "title": "Scan Profiles",
+            "description": "Check profile XML files for missing paths, duplicate names, and parse problems.",
+            "type": "async-action",
+            "buttonText": "Retry scan",
+            "successText": "TeknoParrot profiles are ready.",
+            "errorText": "TeknoParrot profiles need attention.",
+            "executeOnLoad": true,
+            "optional": false
+          },
+          {
+            "id": "preview_sync",
+            "title": "Preview Import",
+            "description": "Preview the system, emulator, and games HyperHQ will receive.",
+            "type": "async-action",
+            "buttonText": "Refresh preview",
+            "successText": "Import preview is ready.",
+            "errorText": "Import preview could not be generated.",
+            "executeOnLoad": true,
+            "optional": true
+          },
+          {
+            "id": "sync_games",
+            "title": "Sync Games",
+            "description": "Create Arcade (TeknoParrot), link TeknoParrot, and import the profile XML games.",
+            "type": "async-action",
+            "buttonText": "Retry sync",
+            "successText": "TeknoParrot games synced.",
+            "errorText": "TeknoParrot games could not be synced.",
+            "executeOnLoad": true,
+            "optional": false
+          },
+          {
+            "id": "finish",
+            "title": "Setup complete",
+            "description": "TeknoParrot Tools setup is complete. HyperHQ will use these settings for profile validation, imports, backups, and launching.",
+            "type": "info",
+            "buttonText": "Finish",
+            "slides": [
+              {
+                "title": "Ready to play",
+                "description": "Your setup state has been saved so this wizard will not open again automatically.",
+                "icon": "check_circle"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "platforms": [
+    "windows"
+  ],
+  "keywords": [
+    "teknoparrot",
+    "arcade",
+    "userprofiles",
+    "gameprofiles",
+    "xml",
+    "profile-import"
+  ]
+}

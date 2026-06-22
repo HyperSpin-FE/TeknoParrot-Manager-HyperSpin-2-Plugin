@@ -1,0 +1,9 @@
+# Distribution ZIPs -- these go to GitHub Releases, not git history
+*.zip
+
+# Local instruction file -- contains local paths, not for public repos
+CLAUDE.md
+
+# User-specific generated files
+config.json
+*.log

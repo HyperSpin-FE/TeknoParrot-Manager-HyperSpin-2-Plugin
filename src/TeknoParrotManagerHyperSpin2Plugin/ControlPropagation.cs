@@ -2,7 +2,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Xml.Linq;
 
-namespace TeknoParrotToolsPlugin;
+namespace TeknoParrotManagerHyperSpin2Plugin;
 
 // Phase 1 of ROADMAP.md: ports Invoke-ControlPropagation / Invoke-DeviceSurvey
 // and their helpers from the original PowerShell tool. You bind ONE reference

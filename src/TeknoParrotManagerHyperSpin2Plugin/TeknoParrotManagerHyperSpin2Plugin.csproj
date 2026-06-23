@@ -7,15 +7,15 @@
     <PublishSingleFile>true</PublishSingleFile>
     <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
     <SelfContained>true</SelfContained>
-    <AssemblyName>TeknoParrotToolsPlugin</AssemblyName>
-    <RootNamespace>TeknoParrotToolsPlugin</RootNamespace>
+    <AssemblyName>TeknoParrotManagerHyperSpin2Plugin</AssemblyName>
+    <RootNamespace>TeknoParrotManagerHyperSpin2Plugin</RootNamespace>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
     <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
-      <_Parameter1>TeknoParrotToolsPlugin.Tests</_Parameter1>
+      <_Parameter1>TeknoParrotManagerHyperSpin2Plugin.Tests</_Parameter1>
     </AssemblyAttribute>
   </ItemGroup>
 

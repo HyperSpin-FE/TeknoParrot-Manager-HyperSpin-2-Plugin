@@ -8,14 +8,14 @@ using System.Xml.Linq;
 using HyperAI.Plugin.Common;
 using HyperAI.Plugin.SocketIO;
 
-namespace TeknoParrotToolsPlugin;
+namespace TeknoParrotManagerHyperSpin2Plugin;
 
-public static class TeknoParrotToolsPluginMain
+public static class TeknoParrotManagerHyperSpin2PluginMain
 {
-    internal const string PluginId = "teknoparrot-tools";
-    internal const string PluginName = "TeknoParrot Tools";
-    internal const string PluginVersion = "0.4.0";
-    internal const string WizardId = "teknoparrot-tools-setup";
+    internal const string PluginId = "teknoparrot-manager-hyperspin2-plugin";
+    internal const string PluginName = "TeknoParrot Manager - HyperSpin 2 Plugin";
+    internal const string PluginVersion = "0.6.0";
+    internal const string WizardId = "teknoparrot-manager-hyperspin2-plugin-setup";
     internal const string TeknoParrotSystemName = "Arcade (TeknoParrot)";
     internal const string TeknoParrotSystemReferenceId = "97d957bb-1490-4c1f-b698-08dd285234a8";
     internal const string TeknoParrotSystemDescription = "TeknoParrot is a software project designed to run select PC-based arcade titles on personal computers, acting as a compatibility or translation layer rather than a traditional hardware emulator. It aims to preserve arcade history and bring the arcade experience to the PC.";
@@ -107,7 +107,7 @@ public static class TeknoParrotToolsPluginMain
             }
 
             await socketClient.SubscribeToEventsAsync(new[] { "dbConnected", "systemChanged" });
-            await socketClient.UpdateStatusAsync("connected", "TeknoParrot Tools connected and ready");
+            await socketClient.UpdateStatusAsync("connected", "TeknoParrot Manager - HyperSpin 2 Plugin connected and ready");
 
             while (socketClient.IsConnected)
             {
@@ -1039,17 +1039,17 @@ public sealed class TeknoParrotSettings
     {
         return new TeknoParrotSettings
         {
-            TeknoParrotRootPath = TeknoParrotToolsPluginMain.FirstNonEmpty(other.TeknoParrotRootPath, TeknoParrotRootPath),
-            ExecutablePath = TeknoParrotToolsPluginMain.FirstNonEmpty(other.ExecutablePath, ExecutablePath),
-            UserProfilesPath = TeknoParrotToolsPluginMain.FirstNonEmpty(other.UserProfilesPath, UserProfilesPath),
-            GameProfilesPath = TeknoParrotToolsPluginMain.FirstNonEmpty(other.GameProfilesPath, GameProfilesPath),
-            GamesRootPath = TeknoParrotToolsPluginMain.FirstNonEmpty(other.GamesRootPath, GamesRootPath),
-            IconsPath = TeknoParrotToolsPluginMain.FirstNonEmpty(other.IconsPath, IconsPath),
-            BackupPath = TeknoParrotToolsPluginMain.FirstNonEmpty(other.BackupPath, BackupPath),
-            EggmanDatPath = TeknoParrotToolsPluginMain.FirstNonEmpty(other.EggmanDatPath, EggmanDatPath),
-            ControlOverridesPath = TeknoParrotToolsPluginMain.FirstNonEmpty(other.ControlOverridesPath, ControlOverridesPath),
+            TeknoParrotRootPath = TeknoParrotManagerHyperSpin2PluginMain.FirstNonEmpty(other.TeknoParrotRootPath, TeknoParrotRootPath),
+            ExecutablePath = TeknoParrotManagerHyperSpin2PluginMain.FirstNonEmpty(other.ExecutablePath, ExecutablePath),
+            UserProfilesPath = TeknoParrotManagerHyperSpin2PluginMain.FirstNonEmpty(other.UserProfilesPath, UserProfilesPath),
+            GameProfilesPath = TeknoParrotManagerHyperSpin2PluginMain.FirstNonEmpty(other.GameProfilesPath, GameProfilesPath),
+            GamesRootPath = TeknoParrotManagerHyperSpin2PluginMain.FirstNonEmpty(other.GamesRootPath, GamesRootPath),
+            IconsPath = TeknoParrotManagerHyperSpin2PluginMain.FirstNonEmpty(other.IconsPath, IconsPath),
+            BackupPath = TeknoParrotManagerHyperSpin2PluginMain.FirstNonEmpty(other.BackupPath, BackupPath),
+            EggmanDatPath = TeknoParrotManagerHyperSpin2PluginMain.FirstNonEmpty(other.EggmanDatPath, EggmanDatPath),
+            ControlOverridesPath = TeknoParrotManagerHyperSpin2PluginMain.FirstNonEmpty(other.ControlOverridesPath, ControlOverridesPath),
             MinBoundForArchetype = other.MinBoundForArchetype > 0 ? other.MinBoundForArchetype : MinBoundForArchetype,
-            CrosshairsPath = TeknoParrotToolsPluginMain.FirstNonEmpty(other.CrosshairsPath, CrosshairsPath),
+            CrosshairsPath = TeknoParrotManagerHyperSpin2PluginMain.FirstNonEmpty(other.CrosshairsPath, CrosshairsPath),
             DownloadMedia = other.DownloadMedia,
             AutoSyncOnDbConnect = other.AutoSyncOnDbConnect
         };
@@ -1202,7 +1202,7 @@ public static partial class TeknoParrotProfileScanner
     {
         var document = XDocument.Load(profilePath);
         var profileName = Path.GetFileNameWithoutExtension(profilePath);
-        var title = TeknoParrotToolsPluginMain.FirstNonEmpty(
+        var title = TeknoParrotManagerHyperSpin2PluginMain.FirstNonEmpty(
             FirstElementValue(document, "Description"),
             FirstElementValue(document, "GameName"));
         var gamePath = FirstElementValue(document, "GamePath");
@@ -2166,7 +2166,7 @@ public static partial class TeknoParrotProfileScanner
             using var branchCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
             branchCts.CancelAfter(TimeSpan.FromSeconds(10));
             using var repoRequest = new HttpRequestMessage(HttpMethod.Get, $"https://api.github.com/repos/{TeknoParrotUiRepo}");
-            repoRequest.Headers.UserAgent.ParseAdd($"TeknoParrotToolsPlugin/{TeknoParrotToolsPluginMain.PluginVersion}");
+            repoRequest.Headers.UserAgent.ParseAdd($"TeknoParrotManagerHyperSpin2Plugin/{TeknoParrotManagerHyperSpin2PluginMain.PluginVersion}");
             using var repoResponse = await http.SendAsync(repoRequest, branchCts.Token).ConfigureAwait(false);
             repoResponse.EnsureSuccessStatusCode();
             var repoInfo = await repoResponse.Content.ReadFromJsonAsync<JsonElement>(cancellationToken: branchCts.Token).ConfigureAwait(false);
@@ -2189,7 +2189,7 @@ public static partial class TeknoParrotProfileScanner
                 using var attemptCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
                 attemptCts.CancelAfter(TimeSpan.FromSeconds(20));
                 using var request = new HttpRequestMessage(HttpMethod.Get, apiUri);
-                request.Headers.UserAgent.ParseAdd($"TeknoParrotToolsPlugin/{TeknoParrotToolsPluginMain.PluginVersion}");
+                request.Headers.UserAgent.ParseAdd($"TeknoParrotManagerHyperSpin2Plugin/{TeknoParrotManagerHyperSpin2PluginMain.PluginVersion}");
                 using var response = await http.SendAsync(request, attemptCts.Token).ConfigureAwait(false);
                 response.EnsureSuccessStatusCode();
                 var body = await response.Content.ReadFromJsonAsync<JsonElement>(cancellationToken: attemptCts.Token).ConfigureAwait(false);

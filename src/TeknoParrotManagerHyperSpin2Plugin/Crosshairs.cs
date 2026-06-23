@@ -3,7 +3,7 @@ using System.Text;
 using System.Text.Json.Serialization;
 using System.Xml.Linq;
 
-namespace TeknoParrotToolsPlugin;
+namespace TeknoParrotManagerHyperSpin2Plugin;
 
 // Phases 2 and 3 of ROADMAP.md: ports Invoke-CrosshairSetup, Export-CrosshairPreview,
 // Set-Pcsx2CursorPaths, and Invoke-CursorHideSetup from the original PowerShell tool.

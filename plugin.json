@@ -1,17 +1,17 @@
 {
-  "id": "teknoparrot-tools",
-  "name": "TeknoParrot Tools",
-  "version": "0.5.0",
+  "id": "teknoparrot-manager-hyperspin2-plugin",
+  "name": "TeknoParrot Manager - HyperSpin 2 Plugin",
+  "version": "0.6.0",
   "changelog": "CHANGELOG.md",
-  "author": "HyperSpin Team",
+  "author": "Jumpstile",
   "type": "executable",
   "language": "C#",
   "description": "Optional TeknoParrot setup and import helpers for validating UserProfiles, creating Arcade (TeknoParrot), and importing profile XMLs into HyperHQ.",
   "platform": "Arcade",
-  "executable": "TeknoParrotToolsPlugin.exe",
+  "executable": "TeknoParrotManagerHyperSpin2Plugin.exe",
   "executableProviders": {
-    "windows": "TeknoParrotToolsPlugin.exe",
-    "linux": "TeknoParrotToolsPlugin"
+    "windows": "TeknoParrotManagerHyperSpin2Plugin.exe",
+    "linux": "TeknoParrotManagerHyperSpin2Plugin"
   },
   "communication": {
     "preferred": "socketio",
@@ -125,7 +125,7 @@
       "key": "backupPath",
       "type": "string",
       "label": "Backup Folder",
-      "description": "Folder where TeknoParrot Tools stores timestamped profile backups.",
+      "description": "Folder where TeknoParrot Manager - HyperSpin 2 Plugin stores timestamped profile backups.",
       "defaultValue": "",
       "required": false
     },
@@ -180,10 +180,10 @@
     {
       "id": "run_setup_wizard",
       "label": "Run Setup Wizard",
-      "description": "Re-launch the TeknoParrot Tools setup wizard.",
+      "description": "Re-launch the TeknoParrot Manager - HyperSpin 2 Plugin setup wizard.",
       "icon": "wand",
       "type": "wizard",
-      "wizard_id": "teknoparrot-tools-setup",
+      "wizard_id": "teknoparrot-manager-hyperspin2-plugin-setup",
       "confirmation": false
     },
     {
@@ -325,21 +325,21 @@
   "onboarding": {
     "wizards": [
       {
-        "id": "teknoparrot-tools-setup",
-        "title": "Set up TeknoParrot Tools",
+        "id": "teknoparrot-manager-hyperspin2-plugin-setup",
+        "title": "Set up TeknoParrot Manager - HyperSpin 2 Plugin",
         "description": "Point HyperHQ at TeknoParrot, validate profiles, and preview the import before syncing.",
-        "completedTitle": "TeknoParrot Tools is ready",
+        "completedTitle": "TeknoParrot Manager - HyperSpin 2 Plugin is ready",
         "completedMessage": "Arcade (TeknoParrot) can now be synced from your UserProfiles folder.",
         "skippable": true,
         "autoStart": "first-run",
         "theme": {
           "accentColor": "#d21f3c",
-          "panelClass": "teknoparrot-tools-onboarding"
+          "panelClass": "teknoparrot-manager-hyperspin2-plugin-onboarding"
         },
         "steps": [
           {
             "id": "welcome",
-            "title": "TeknoParrot Tools",
+            "title": "TeknoParrot Manager - HyperSpin 2 Plugin",
             "description": "This optional add-on validates TeknoParrot profiles, creates Arcade (TeknoParrot), and imports existing UserProfiles XML files into HyperHQ.",
             "type": "info",
             "buttonText": "Start setup",
@@ -506,7 +506,7 @@
           {
             "id": "finish",
             "title": "Setup complete",
-            "description": "TeknoParrot Tools setup is complete. HyperHQ will use these settings for profile validation, imports, backups, and launching.",
+            "description": "TeknoParrot Manager - HyperSpin 2 Plugin setup is complete. HyperHQ will use these settings for profile validation, imports, backups, and launching.",
             "type": "info",
             "buttonText": "Finish",
             "slides": [

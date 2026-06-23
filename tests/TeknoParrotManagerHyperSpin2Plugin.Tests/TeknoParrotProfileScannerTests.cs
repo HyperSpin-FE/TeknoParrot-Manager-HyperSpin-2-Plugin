@@ -1,8 +1,8 @@
 using System.Text.Json;
-using TeknoParrotToolsPlugin;
+using TeknoParrotManagerHyperSpin2Plugin;
 using Xunit;
 
-namespace TeknoParrotToolsPlugin.Tests;
+namespace TeknoParrotManagerHyperSpin2Plugin.Tests;
 
 public class TeknoParrotProfileScannerTests
 {
@@ -38,7 +38,7 @@ public class TeknoParrotProfileScannerTests
         var batman = result.Games.Single(game => game.ProfileName == "Batman");
 
         Assert.Equal("Batman Arcade", batman.Title);
-        var healthResponse = await TeknoParrotToolsPluginMain.ProcessMessage(JsonSerializer.Serialize(new
+        var healthResponse = await TeknoParrotManagerHyperSpin2PluginMain.ProcessMessage(JsonSerializer.Serialize(new
         {
             method = "execute",
             data = new
@@ -234,7 +234,7 @@ public class TeknoParrotProfileScannerTests
         using var fixture = new TeknoParrotFixture();
         fixture.WriteProfile("ID8", "Initial D8 Infinity", fixture.WriteGameExecutable("InitialD8.exe"));
 
-        var response = TeknoParrotToolsPluginMain.BackupProfiles(fixture.Settings);
+        var response = TeknoParrotManagerHyperSpin2PluginMain.BackupProfiles(fixture.Settings);
         var backupPath = response.GetType().GetProperty("backup_path")?.GetValue(response)?.ToString();
 
         Assert.False(string.IsNullOrWhiteSpace(backupPath));
@@ -246,7 +246,7 @@ public class TeknoParrotProfileScannerTests
     {
         using var fixture = new TeknoParrotFixture();
         fixture.WriteProfile("ID8", "Initial D8 Infinity", fixture.WriteGameExecutable("InitialD8.exe"));
-        var backupResponse = TeknoParrotToolsPluginMain.BackupProfiles(fixture.Settings);
+        var backupResponse = TeknoParrotManagerHyperSpin2PluginMain.BackupProfiles(fixture.Settings);
         var backupPath = backupResponse.GetType().GetProperty("backup_path")?.GetValue(backupResponse)?.ToString();
         Assert.False(string.IsNullOrWhiteSpace(backupPath));
 
@@ -262,7 +262,7 @@ public class TeknoParrotProfileScannerTests
             }
         });
 
-        var response = await TeknoParrotToolsPluginMain.ProcessMessage(message);
+        var response = await TeknoParrotManagerHyperSpin2PluginMain.ProcessMessage(message);
         var preRestoreBackupPath = response.GetType().GetProperty("pre_restore_backup_path")?.GetValue(response)?.ToString();
 
         Assert.False(string.IsNullOrWhiteSpace(preRestoreBackupPath));

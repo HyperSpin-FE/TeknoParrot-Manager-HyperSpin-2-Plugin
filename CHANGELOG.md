@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.6.0
+
+- **Breaking:** renamed the plugin from "TeknoParrot Tools" (id `teknoparrot-tools`) to "TeknoParrot Manager - HyperSpin 2 Plugin" (id `teknoparrot-manager-hyperspin2-plugin`) to match this repository's actual name. Any existing HyperHQ installation will need to remove and re-add the plugin, since HyperHQ identifies plugins by id. The C# project/namespace, test project, executable filename (`TeknoParrotManagerHyperSpin2Plugin.exe`), and release ZIP filename prefix were all renamed to match.
+- Fix `plugin.json`'s `author` field, which said the placeholder "HyperSpin Team" -- now "Jumpstile".
+
 ## 0.5.0
 
 - Add an optional `canonicalArchetype` field to the control-overrides JSON (`controlOverridesPath`): if two of your already-bound reference games for the same control type disagree on their Input API setting, this lets you name the one that's correct, and the plugin fixes the other one's Input API to match. A reference game's button bindings are still never touched -- only this one Input-API field, and only when you've explicitly said which reference game is right. Ported from teknoparrot-manager commit 64b217c (issue #1 follow-up); does not reintroduce the v0.99.12 heuristic-guess regression noted in 0.3.0 below.
@@ -29,6 +34,6 @@
 
 ## 0.1.0
 
-- Add optional TeknoParrot Tools plugin with profile scanning, dry-run import preview, HyperHQ system/emulator/game sync, and profile backup/restore actions.
+- Add optional TeknoParrot Manager - HyperSpin 2 Plugin with profile scanning, dry-run import preview, HyperHQ system/emulator/game sync, and profile backup/restore actions.
 - Align the HyperHQ first-run wizard with the established plugin-page form/action flow and expose a health-check button.
 - Add source-aligned profile registration, unique GamePath repair, Description title parsing, profile health counts, and TeknoParrot profile-name launch arguments.

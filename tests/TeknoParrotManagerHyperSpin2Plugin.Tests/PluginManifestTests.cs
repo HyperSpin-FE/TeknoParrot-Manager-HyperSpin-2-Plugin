@@ -1,7 +1,7 @@
 using System.Text.Json;
 using Xunit;
 
-namespace TeknoParrotToolsPlugin.Tests;
+namespace TeknoParrotManagerHyperSpin2Plugin.Tests;
 
 public class PluginManifestTests
 {
@@ -12,12 +12,12 @@ public class PluginManifestTests
         using var document = JsonDocument.Parse(File.ReadAllText(manifestPath));
         var root = document.RootElement;
 
-        Assert.Equal("teknoparrot-tools", root.GetProperty("id").GetString());
-        Assert.Equal("TeknoParrot Tools", root.GetProperty("name").GetString());
+        Assert.Equal("teknoparrot-manager-hyperspin2-plugin", root.GetProperty("id").GetString());
+        Assert.Equal("TeknoParrot Manager - HyperSpin 2 Plugin", root.GetProperty("name").GetString());
         var wizard = root.GetProperty("onboarding").GetProperty("wizards")[0];
-        Assert.Equal("teknoparrot-tools-setup", wizard.GetProperty("id").GetString());
+        Assert.Equal("teknoparrot-manager-hyperspin2-plugin-setup", wizard.GetProperty("id").GetString());
         Assert.Equal("first-run", wizard.GetProperty("autoStart").GetString());
-        Assert.Equal("teknoparrot-tools-onboarding", wizard.GetProperty("theme").GetProperty("panelClass").GetString());
+        Assert.Equal("teknoparrot-manager-hyperspin2-plugin-onboarding", wizard.GetProperty("theme").GetProperty("panelClass").GetString());
 
         var actions = root.GetProperty("actions").EnumerateArray()
             .Select(action => action.GetProperty("id").GetString())
@@ -37,7 +37,7 @@ public class PluginManifestTests
         var runWizardAction = root.GetProperty("actions").EnumerateArray()
             .Single(action => action.GetProperty("id").GetString() == "run_setup_wizard");
         Assert.Equal("wizard", runWizardAction.GetProperty("type").GetString());
-        Assert.Equal("teknoparrot-tools-setup", runWizardAction.GetProperty("wizard_id").GetString());
+        Assert.Equal("teknoparrot-manager-hyperspin2-plugin-setup", runWizardAction.GetProperty("wizard_id").GetString());
 
         var steps = wizard.GetProperty("steps").EnumerateArray()
             .ToDictionary(step => step.GetProperty("id").GetString()!, StringComparer.OrdinalIgnoreCase);

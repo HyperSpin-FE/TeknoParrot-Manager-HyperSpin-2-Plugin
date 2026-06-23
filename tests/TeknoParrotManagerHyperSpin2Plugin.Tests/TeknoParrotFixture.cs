@@ -1,6 +1,6 @@
-using TeknoParrotToolsPlugin;
+using TeknoParrotManagerHyperSpin2Plugin;
 
-namespace TeknoParrotToolsPlugin.Tests;
+namespace TeknoParrotManagerHyperSpin2Plugin.Tests;
 
 internal sealed class TeknoParrotFixture : IDisposable
 {
@@ -8,7 +8,7 @@ internal sealed class TeknoParrotFixture : IDisposable
 
     public TeknoParrotFixture(bool createUserProfiles = true)
     {
-        tempRoot = Path.Combine(Path.GetTempPath(), "teknoparrot-tools-tests", Guid.NewGuid().ToString("N"));
+        tempRoot = Path.Combine(Path.GetTempPath(), "teknoparrot-manager-hyperspin2-plugin-tests", Guid.NewGuid().ToString("N"));
         RootPath = Path.Combine(tempRoot, "TeknoParrot");
         UserProfilesPath = Path.Combine(RootPath, "UserProfiles");
         GameProfilesPath = Path.Combine(RootPath, "GameProfiles");

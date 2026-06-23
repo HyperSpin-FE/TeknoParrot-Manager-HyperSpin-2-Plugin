@@ -1,6 +1,6 @@
-# TeknoParrot Manager HyperSpin 2 Plugin
+# TeknoParrot Manager - HyperSpin 2 Plugin
 
-![TeknoParrot Tools](banner.jpg)
+![TeknoParrot Manager - HyperSpin 2 Plugin](banner.jpg)
 
 Standalone HyperSpin 2 / HyperHQ plugin for TeknoParrot profile maintenance and HyperHQ import.
 
@@ -58,15 +58,15 @@ That boundary is deliberate. HyperHQ should remain the launcher and library mana
 |-- banner.jpg
 |-- CHANGELOG.md
 |-- src/
-|   |-- TeknoParrotToolsPlugin/
-|   |   |-- TeknoParrotToolsPlugin.csproj
+|   |-- TeknoParrotManagerHyperSpin2Plugin/
+|   |   |-- TeknoParrotManagerHyperSpin2Plugin.csproj
 |   |   `-- Program.cs
 |   `-- HyperHQPluginCommon/
 |       |-- HyperImportModels.cs
 |       `-- PluginSocketIOClient.cs
 `-- tests/
-    `-- TeknoParrotToolsPlugin.Tests/
-        |-- TeknoParrotToolsPlugin.Tests.csproj
+    `-- TeknoParrotManagerHyperSpin2Plugin.Tests/
+        |-- TeknoParrotManagerHyperSpin2Plugin.Tests.csproj
         |-- PluginManifestTests.cs
         |-- TeknoParrotFixture.cs
         |-- TeknoParrotImportPayloadTests.cs
@@ -86,14 +86,14 @@ Commands:
 ```powershell
 dotnet restore .\TeknoParrotHyperHQPlugin.sln
 dotnet build .\TeknoParrotHyperHQPlugin.sln
-dotnet test .\tests\TeknoParrotToolsPlugin.Tests\TeknoParrotToolsPlugin.Tests.csproj
-dotnet run --project .\src\TeknoParrotToolsPlugin\TeknoParrotToolsPlugin.csproj -- --version
+dotnet test .\tests\TeknoParrotManagerHyperSpin2Plugin.Tests\TeknoParrotManagerHyperSpin2Plugin.Tests.csproj
+dotnet run --project .\src\TeknoParrotManagerHyperSpin2Plugin\TeknoParrotManagerHyperSpin2Plugin.csproj -- --version
 ```
 
 Basic stdio smoke test:
 
 ```powershell
-'{"id":"status","method":"execute","data":{"action":"get_status"}}' | dotnet run --project .\src\TeknoParrotToolsPlugin\TeknoParrotToolsPlugin.csproj --no-build
+'{"id":"status","method":"execute","data":{"action":"get_status"}}' | dotnet run --project .\src\TeknoParrotManagerHyperSpin2Plugin\TeknoParrotManagerHyperSpin2Plugin.csproj --no-build
 ```
 
 ## GitHub Releases
@@ -117,12 +117,12 @@ git push origin v0.2.0
 The workflow restores, tests, publishes a Windows x64 self-contained single-file executable, validates package contents, creates a GitHub release, and uploads:
 
 ```text
-teknoparrot-tools-v0.2.0-win-x64.zip
+teknoparrot-manager-hyperspin2-plugin-v0.2.0-win-x64.zip
 ```
 
 The ZIP contains only the HyperHQ runtime files:
 
-- `TeknoParrotToolsPlugin.exe`
+- `TeknoParrotManagerHyperSpin2Plugin.exe`
 - `plugin.json`
 - `CHANGELOG.md`
 - `icon.jpg`
@@ -132,7 +132,7 @@ The ZIP contains only the HyperHQ runtime files:
 
 ## HyperHQ Runtime
 
-The plugin manifest is `plugin.json`. HyperHQ launches `TeknoParrotToolsPlugin.exe` and communicates over Socket.IO when available, with stdio as the fallback path.
+The plugin manifest is `plugin.json`. HyperHQ launches `TeknoParrotManagerHyperSpin2Plugin.exe` and communicates over Socket.IO when available, with stdio as the fallback path.
 
 Supported direct methods:
 

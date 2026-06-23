@@ -26,7 +26,7 @@ permissions:
 
 env:
   DOTNET_VERSION: 10.0.x
-  PROJECT_PATH: src/TeknoParrotToolsPlugin/TeknoParrotToolsPlugin.csproj
+  PROJECT_PATH: src/TeknoParrotManagerHyperSpin2Plugin/TeknoParrotManagerHyperSpin2Plugin.csproj
   SOLUTION_PATH: TeknoParrotHyperHQPlugin.sln
   RUNTIME_ID: win-x64
 
@@ -214,12 +214,12 @@ jobs:
           $packageName = '${{ steps.metadata.outputs.package_name }}'
           $version = '${{ steps.metadata.outputs.version }}'
           $notes = @"
-          ## TeknoParrot Tools v$version
+          ## TeknoParrot Manager - HyperSpin 2 Plugin v$version
 
           Download `$packageName` and extract it into the HyperHQ plugins directory.
 
           Package contents:
-          - `TeknoParrotToolsPlugin.exe`
+          - `TeknoParrotManagerHyperSpin2Plugin.exe`
           - `plugin.json`
           - `CHANGELOG.md`
           - Plugin icon files

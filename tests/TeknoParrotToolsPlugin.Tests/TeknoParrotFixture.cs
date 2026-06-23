@@ -110,6 +110,54 @@ internal sealed class TeknoParrotFixture : IDisposable
         return TeknoParrotProfileScanner.ParseProfile(profilePath, RootPath, IconsPath);
     }
 
+    public sealed record ControlButton(string InputMapping, string AnalogType, bool Bound, string DevicePath = "DEV1", string BindName = "Button 1", string ButtonName = "Button");
+
+    // Writes a UserProfiles XML with a JoystickButtons section and an Input
+    // API ConfigValues field, matching the real TeknoParrot profile schema
+    // closely enough to exercise control propagation.
+    public string WriteControlProfile(string profileName, string inputApi, string[] inputApiOptions, params ControlButton[] buttons)
+    {
+        Directory.CreateDirectory(UserProfilesPath);
+        var profilePath = Path.Combine(UserProfilesPath, $"{profileName}.xml");
+
+        var sb = new System.Text.StringBuilder();
+        sb.AppendLine("<?xml version=\"1.0\" encoding=\"utf-8\"?>");
+        sb.AppendLine("<GameProfile>");
+        sb.AppendLine("  <JoystickButtons>");
+        foreach (var b in buttons)
+        {
+            sb.AppendLine("    <JoystickButtons>");
+            sb.AppendLine($"      <ButtonName>{b.ButtonName}</ButtonName>");
+            sb.AppendLine($"      <InputMapping>{b.InputMapping}</InputMapping>");
+            sb.AppendLine($"      <AnalogType>{b.AnalogType}</AnalogType>");
+            if (b.Bound)
+            {
+                sb.AppendLine("      <RawInputButton>");
+                sb.AppendLine($"        <DevicePath>{b.DevicePath}</DevicePath>");
+                sb.AppendLine($"        <BindName>{b.BindName}</BindName>");
+                sb.AppendLine("      </RawInputButton>");
+            }
+            sb.AppendLine("    </JoystickButtons>");
+        }
+        sb.AppendLine("  </JoystickButtons>");
+        sb.AppendLine("  <ConfigValues>");
+        sb.AppendLine("    <FieldInformation>");
+        sb.AppendLine("      <FieldName>Input API</FieldName>");
+        sb.AppendLine($"      <FieldValue>{inputApi}</FieldValue>");
+        sb.AppendLine("      <FieldOptions>");
+        foreach (var option in inputApiOptions)
+        {
+            sb.AppendLine($"        <string>{option}</string>");
+        }
+        sb.AppendLine("      </FieldOptions>");
+        sb.AppendLine("    </FieldInformation>");
+        sb.AppendLine("  </ConfigValues>");
+        sb.AppendLine("</GameProfile>");
+
+        File.WriteAllText(profilePath, sb.ToString());
+        return profilePath;
+    }
+
     public string WriteEggmanDat(params (string GameName, string ProfileCode, string Executable)[] entries)
     {
         var datPath = Path.Combine(tempRoot, "collection.dat");

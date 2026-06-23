@@ -19,17 +19,19 @@ decide what's worth porting. See ROADMAP.md for what's already ported.
 - Registers missing user profiles from `GameProfiles/*.xml` templates when a unique executable match is found, a fuzzy folder-name match clears the confidence threshold, or (optionally) an Eggman/RomVault collection dat resolves a shared-executable game by name.
 - Resolves a dat-provided ProfileCode that doesn't exactly match a local template filename against the live teknogods/TeknoParrotUI profile-code list (falls back to the local GameProfiles listing if unreachable).
 - Repairs broken or empty `GamePath` values only when the matching executable is unambiguous.
+- Propagates control bindings from a bound reference game ("archetype") to unbound profiles of the same control type (driving/lightgun/trackball/analog/button), matched by button function so a wheel value never lands on a gun. Reference games are never modified. An optional control-overrides JSON file (`controlOverridesPath`) can pin a game to a specific archetype, override its auto-detected control family, or exclude it from propagation entirely.
+- Offers a read-only device survey that recommends which control to bind for each game type based on what devices you have.
 - Backs up and restores profile XML files, including a pre-restore backup before overwrite.
 - Creates and syncs the canonical HyperHQ system `Arcade (TeknoParrot)`.
 - Imports TeknoParrot profile XML files as launchable HyperHQ games.
-- Exposes a HyperHQ first-run wizard and plugin-page buttons for setup, health checks, registration preview, repair preview, sync preview, sync, backup, and restore.
+- Exposes a HyperHQ first-run wizard and plugin-page buttons for setup, health checks, registration preview, repair preview, control propagation preview, device survey, sync preview, sync, backup, and restore.
 
 ## Relationship To TeknoParrot Manager
 
 TeknoParrot Manager includes many broader Windows setup and game-modification workflows. This plugin intentionally keeps the HyperHQ surface narrower:
 
-- Included: profile discovery, missing profile registration (with dat-index and profile-code fuzzy fallback), unique path repair, health reporting, backups, HyperHQ system/emulator/game import, and wizard/button integration.
-- Not included in this initial plugin: control propagation, ReShade installation, dgVoodoo2 setup, GPU fixes, FFB setup, Postgres setup, BepInEx deployment, crosshair deployment, and other binary/game-modification operations.
+- Included: profile discovery, missing profile registration (with dat-index and profile-code fuzzy fallback), unique path repair, control binding propagation, device survey, health reporting, backups, HyperHQ system/emulator/game import, and wizard/button integration.
+- Not included yet: crosshair deployment, cursor-hide setup, ReShade installation, dgVoodoo2 setup, GPU fixes, FFB setup, Postgres setup, and BepInEx deployment. See ROADMAP.md.
 
 That boundary is deliberate. HyperHQ should remain the launcher and library manager, while the plugin extends TeknoParrot support where HyperHQ needs structured profile and import behavior.
 
@@ -148,6 +150,9 @@ Supported execute actions:
 - `preview_registration`
 - `register_games`
 - `repair_game_paths`
+- `device_survey`
+- `preview_control_propagation`
+- `propagate_controls`
 - `preview_sync`
 - `sync_games`
 - `backup_profiles`

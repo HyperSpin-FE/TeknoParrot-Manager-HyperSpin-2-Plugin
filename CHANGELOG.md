@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.3.0
+
+- Add control binding propagation (ROADMAP.md Phase 1): copies control bindings from a bound reference game ("archetype") to unbound profiles of the same control type (driving/lightgun/trackball/analog/button), matched by button function so a wheel value never lands on a gun. Carries the archetype's Input API and input-behaviour config (aim mode, sensitivity, axis handling) to the target, but only fields the target also defines. Reference games are never modified -- including their own Input API, deliberately, after a real regression in the original tool where "correcting" an archetype's API against an unrelated best-overlap match silently flipped a user's deliberately-configured profile.
+- Add an optional `controlOverridesPath` setting (a JSON file) to exclude specific games from propagation, pin a game to a specific archetype, or override its auto-detected control family.
+- Add a read-only device survey action that recommends which control to bind for each game type based on what devices you have. Changes nothing.
+- Add `minBoundForArchetype` setting (default 5) controlling how many bound buttons a profile needs before it's treated as a reference game for propagation.
+
 ## 0.2.0
 
 - Add Eggman/RomVault collection-dat disambiguation to profile registration: folders whose executable is shared by many unrelated titles, and that don't fuzzy-match any candidate profile code, can now be resolved via the dat's authoritative game-name -> ProfileCode mapping. Configured via the new optional `eggmanDatPath` setting (a local .dat or .zip the user already has -- this plugin still does not download third-party files itself).

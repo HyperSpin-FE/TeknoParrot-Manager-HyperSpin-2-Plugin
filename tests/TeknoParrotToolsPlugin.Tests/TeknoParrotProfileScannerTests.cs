@@ -269,4 +269,91 @@ public class TeknoParrotProfileScannerTests
         Assert.True(File.Exists(Path.Combine(preRestoreBackupPath!, "ID8.xml")));
         Assert.Contains("Initial D8 Infinity", File.ReadAllText(Path.Combine(fixture.UserProfilesPath, "ID8.xml")));
     }
+
+    [Fact]
+    public void PropagateControls_copies_bindings_and_input_api_from_archetype_to_matching_unbound_profile()
+    {
+        using var fixture = new TeknoParrotFixture();
+        fixture.Settings.MinBoundForArchetype = 1;
+
+        var archetypePath = fixture.WriteControlProfile(
+            "DrivingArchetype", "RawInput", new[] { "RawInput", "DirectInput", "XInput" },
+            new TeknoParrotFixture.ControlButton("P1AnalogX", "Wheel", Bound: true, DevicePath: "DEV1", BindName: "Axis X", ButtonName: "Steering"));
+        var archetypeBefore = File.ReadAllText(archetypePath);
+
+        fixture.WriteControlProfile(
+            "DrivingTarget", "DirectInput", new[] { "RawInput", "DirectInput", "XInput" },
+            new TeknoParrotFixture.ControlButton("P1AnalogX", "Wheel", Bound: false, ButtonName: "Steering Wheel"));
+
+        var result = TeknoParrotProfileScanner.PropagateControls(fixture.Settings, ControlOverrides.Empty, dryRun: false);
+
+        Assert.True(result.Success);
+        Assert.DoesNotContain(result.Items, item => item.Code == "DrivingArchetype");
+        var target = Assert.Single(result.Items, item => item.Code == "DrivingTarget");
+        Assert.Equal("bound", target.Status);
+        Assert.Equal("driving", target.Family);
+        Assert.Equal("DrivingArchetype", target.Archetype);
+        Assert.Equal("RawInput", target.ArchetypeApi);
+        Assert.True(target.ApiSet);
+        Assert.Equal(1, target.Bound);
+
+        // The archetype itself must never be modified.
+        Assert.Equal(archetypeBefore, File.ReadAllText(archetypePath));
+
+        var targetXml = File.ReadAllText(Path.Combine(fixture.UserProfilesPath, "DrivingTarget.xml"));
+        Assert.Contains("<DevicePath>DEV1</DevicePath>", targetXml);
+        Assert.Contains("<BindName>Axis X</BindName>", targetXml);
+        // The target's own display name is preserved, not overwritten by the archetype's.
+        Assert.Contains("<ButtonName>Steering Wheel</ButtonName>", targetXml);
+        Assert.Contains("<FieldValue>RawInput</FieldValue>", targetXml);
+    }
+
+    // Note: there is no test here for the "already bound -> api-fixed" branch
+    // in PropagateControlsCore. It is structurally unreachable in practice,
+    // by design, inherited from the original tool: pool membership (being an
+    // archetype) and "already bound" both use the same minBound threshold,
+    // so any profile bound enough to take that branch already qualifies as
+    // an archetype itself and gets filtered out by the sourcePaths check
+    // first. Confirmed by attempting to construct exactly this scenario --
+    // see the original tool's own comment on this at the top of
+    // PropagateControlsCore ("a known limitation, not solved this round").
+
+    [Fact]
+    public void PropagateControls_respects_noPropagate_override()
+    {
+        using var fixture = new TeknoParrotFixture();
+        fixture.Settings.MinBoundForArchetype = 1;
+
+        fixture.WriteControlProfile(
+            "DrivingArchetype", "RawInput", new[] { "RawInput", "DirectInput", "XInput" },
+            new TeknoParrotFixture.ControlButton("P1AnalogX", "Wheel", Bound: true));
+        fixture.WriteControlProfile(
+            "SkippedDriving", "DirectInput", new[] { "RawInput", "DirectInput", "XInput" },
+            new TeknoParrotFixture.ControlButton("P1AnalogX", "Wheel", Bound: false));
+
+        var overrides = new ControlOverrides { NoPropagate = { "SkippedDriving" } };
+        var result = TeknoParrotProfileScanner.PropagateControls(fixture.Settings, overrides, dryRun: false);
+
+        var target = Assert.Single(result.Items, item => item.Code == "SkippedDriving");
+        Assert.Equal("skipped-override", target.Status);
+    }
+
+    [Fact]
+    public void RunDeviceSurvey_recommends_a_wheel_for_driving_games_when_present()
+    {
+        var plan = TeknoParrotProfileScanner.RunDeviceSurvey(new DeviceSurveyAnswers(HasWheel: true, HasXbox: true));
+
+        var driving = Assert.Single(plan.Plan, item => item.GameType == "Driving games");
+        Assert.Equal("your wheel + pedals", driving.BindWith);
+    }
+
+    [Fact]
+    public void RunDeviceSurvey_falls_back_to_trackball_for_lightgun_games_without_a_gun()
+    {
+        var plan = TeknoParrotProfileScanner.RunDeviceSurvey(new DeviceSurveyAnswers(HasTrackball: true));
+
+        var lightgun = Assert.Single(plan.Plan, item => item.GameType == "Lightgun games (no gun)");
+        Assert.Equal("your trackball (relative/mouse aim)", lightgun.BindWith);
+        Assert.NotNull(plan.Note);
+    }
 }

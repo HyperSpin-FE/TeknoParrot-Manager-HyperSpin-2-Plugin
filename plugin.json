@@ -1,7 +1,7 @@
 {
   "id": "teknoparrot-tools",
   "name": "TeknoParrot Tools",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "changelog": "CHANGELOG.md",
   "author": "HyperSpin Team",
   "type": "executable",
@@ -138,6 +138,22 @@
       "required": false
     },
     {
+      "key": "controlOverridesPath",
+      "type": "string",
+      "label": "Control Overrides File (optional)",
+      "description": "Path to a JSON file with per-game control propagation tweaks: { \"noPropagate\": [...], \"forceArchetype\": {...}, \"familyOverride\": {...} }.",
+      "defaultValue": "",
+      "required": false
+    },
+    {
+      "key": "minBoundForArchetype",
+      "type": "number",
+      "label": "Minimum Bound Buttons For Archetype",
+      "description": "A UserProfile needs at least this many bound buttons before control propagation will treat it as a reference game (archetype) for other profiles of the same type.",
+      "defaultValue": 5,
+      "required": false
+    },
+    {
       "key": "downloadMedia",
       "type": "boolean",
       "label": "Download Media",
@@ -203,6 +219,31 @@
       "type": "secondary",
       "confirmation": true,
       "confirmationMessage": "This will update broken or empty GamePath values when a unique safe match is found. Existing profiles are backed up first. Continue?"
+    },
+    {
+      "id": "device_survey",
+      "label": "Device Survey",
+      "description": "Answer a few questions about your controls to get a recommended binding plan. Read-only: changes nothing.",
+      "icon": "gamepad",
+      "type": "secondary",
+      "confirmation": false
+    },
+    {
+      "id": "preview_control_propagation",
+      "label": "Preview Control Propagation",
+      "description": "Dry-run control binding propagation from your bound reference games to unbound profiles of the same type.",
+      "icon": "eye",
+      "type": "secondary",
+      "confirmation": false
+    },
+    {
+      "id": "propagate_controls",
+      "label": "Propagate Controls",
+      "description": "Copy control bindings from your bound reference games (archetypes) to unbound profiles of the same type, matched by button function. Reference games are never modified.",
+      "icon": "gamepad",
+      "type": "primary",
+      "confirmation": true,
+      "confirmationMessage": "This will copy control bindings from your bound reference games to unbound profiles of the same type. Existing profiles are backed up first. Continue?"
     },
     {
       "id": "preview_sync",

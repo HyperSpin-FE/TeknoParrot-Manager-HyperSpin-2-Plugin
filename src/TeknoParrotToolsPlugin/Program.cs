@@ -14,7 +14,7 @@ public static class TeknoParrotToolsPluginMain
 {
     internal const string PluginId = "teknoparrot-tools";
     internal const string PluginName = "TeknoParrot Tools";
-    internal const string PluginVersion = "0.2.0";
+    internal const string PluginVersion = "0.3.0";
     internal const string WizardId = "teknoparrot-tools-setup";
     internal const string TeknoParrotSystemName = "Arcade (TeknoParrot)";
     internal const string TeknoParrotSystemReferenceId = "97d957bb-1490-4c1f-b698-08dd285234a8";
@@ -265,6 +265,42 @@ public static class TeknoParrotToolsPluginMain
 
     private static void LogAsyncSink(string message) => Console.Error.WriteLine($"[{PluginId}] INFO: {message}");
 
+    private static object PreviewControlPropagation(JsonElement data)
+    {
+        settings = MergeSettings(settings, data);
+        var overrides = TeknoParrotProfileScanner.LoadControlOverrides(settings.ControlOverridesPath, LogAsyncSink);
+        return TeknoParrotProfileScanner.PropagateControls(settings, overrides, dryRun: true);
+    }
+
+    private static object PropagateControls(JsonElement data)
+    {
+        settings = MergeSettings(settings, data);
+        var dryRun = GetBool(data, "dryRun") || GetBool(data, "dry_run");
+        var backup = dryRun ? null : TryBackupProfilesForMutation(settings);
+        if (backup is { Success: false })
+        {
+            return new { success = false, error = backup.Error };
+        }
+
+        var overrides = TeknoParrotProfileScanner.LoadControlOverrides(settings.ControlOverridesPath, LogAsyncSink);
+        var result = TeknoParrotProfileScanner.PropagateControls(settings, overrides, dryRun);
+        return result with { BackupPath = backup?.BackupPath };
+    }
+
+    private static object RunDeviceSurvey(JsonElement data)
+    {
+        var answers = new DeviceSurveyAnswers(
+            HasXbox: GetBool(data, "hasXbox"),
+            HasArcade: GetBool(data, "hasArcade"),
+            HasTrackball: GetBool(data, "hasTrackball"),
+            HasSpinner: GetBool(data, "hasSpinner"),
+            HasWheel: GetBool(data, "hasWheel"),
+            HasGun: GetBool(data, "hasGun"),
+            HasKeyboard: GetBool(data, "hasKeyboard"));
+
+        return TeknoParrotProfileScanner.RunDeviceSurvey(answers);
+    }
+
     private static object RepairGamePaths(JsonElement data)
     {
         settings = MergeSettings(settings, data);
@@ -296,6 +332,9 @@ public static class TeknoParrotToolsPluginMain
             "preview_registration" => await PreviewRegisterGames(data),
             "register_games" => await RegisterGames(data),
             "repair_game_paths" => RepairGamePaths(data),
+            "preview_control_propagation" => PreviewControlPropagation(data),
+            "propagate_controls" => PropagateControls(data),
+            "device_survey" => RunDeviceSurvey(data),
             "preview_sync" => await SyncGames(SetDryRun(data)),
             "sync_games" => await SyncGames(data),
             "backup_profiles" => BackupProfiles(settings),
@@ -945,6 +984,8 @@ public sealed class TeknoParrotSettings
     public string IconsPath { get; set; } = string.Empty;
     public string BackupPath { get; set; } = string.Empty;
     public string EggmanDatPath { get; set; } = string.Empty;
+    public string ControlOverridesPath { get; set; } = string.Empty;
+    public int MinBoundForArchetype { get; set; } = 5;
     public bool DownloadMedia { get; set; } = true;
     public bool AutoSyncOnDbConnect { get; set; } = false;
 
@@ -960,6 +1001,8 @@ public sealed class TeknoParrotSettings
             IconsPath = TeknoParrotToolsPluginMain.FirstNonEmpty(other.IconsPath, IconsPath),
             BackupPath = TeknoParrotToolsPluginMain.FirstNonEmpty(other.BackupPath, BackupPath),
             EggmanDatPath = TeknoParrotToolsPluginMain.FirstNonEmpty(other.EggmanDatPath, EggmanDatPath),
+            ControlOverridesPath = TeknoParrotToolsPluginMain.FirstNonEmpty(other.ControlOverridesPath, ControlOverridesPath),
+            MinBoundForArchetype = other.MinBoundForArchetype > 0 ? other.MinBoundForArchetype : MinBoundForArchetype,
             DownloadMedia = other.DownloadMedia,
             AutoSyncOnDbConnect = other.AutoSyncOnDbConnect
         };
@@ -996,7 +1039,7 @@ public sealed class TeknoParrotScanResult
     public List<string> Errors { get; init; } = new();
 }
 
-public static class TeknoParrotProfileScanner
+public static partial class TeknoParrotProfileScanner
 {
     private const double FuzzyAutoThreshold = 0.72;
     private static readonly string[] GameFileExtensions = { ".exe", ".elf", ".iso", ".gcm", ".gcz", ".bin", ".e4", ".zip", ".xbe", ".dll" };

@@ -34,7 +34,7 @@ proceed without that conversation.
 
 ## Phase order
 
-### Phase 1 -- Control propagation (Group A, highest complexity in this group)
+### Phase 1 -- Control propagation (Group A, highest complexity in this group) -- DONE (v0.3.0)
 Port `Invoke-ControlPropagation` + `Invoke-DeviceSurvey`
 (tpm.ps1:6025, 6194). Binds one reference game per control type in
 TeknoParrotUI; copies those bindings to every other profile of the same

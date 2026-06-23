@@ -113,6 +113,42 @@ public class TeknoParrotProfileScannerTests
     }
 
     [Fact]
+    public void RegisterGames_reports_shared_executable_ambiguity_without_writing_profile()
+    {
+        using var fixture = new TeknoParrotFixture();
+        fixture.WriteGameExecutable("Shared Loader", "game.exe");
+        fixture.WriteProfileTemplate("InitialD8", "Initial D8 Infinity", "game.exe");
+        fixture.WriteProfileTemplate("OtherSharedGame", "Other Shared Game", "game.exe");
+
+        var result = TeknoParrotProfileScanner.RegisterGames(fixture.Settings, dryRun: false);
+
+        Assert.True(result.Success);
+        Assert.Empty(result.Registered);
+        var issue = Assert.Single(result.Ambiguous);
+        Assert.Equal("shared-executable", issue.Reason);
+        Assert.Empty(Directory.GetFiles(fixture.UserProfilesPath, "*.xml", SearchOption.TopDirectoryOnly));
+    }
+
+    [Fact]
+    public void RegisterGames_sets_secondary_executable_path_when_template_requires_two_executables()
+    {
+        using var fixture = new TeknoParrotFixture();
+        var executable = fixture.WriteGameExecutable("TwinExe", "primary.exe");
+        var secondary = Path.Combine(Path.GetDirectoryName(executable)!, "secondary.exe");
+        File.WriteAllText(secondary, string.Empty);
+        fixture.WriteProfileTemplate("TwinExe", "Twin Exe", "primary.exe", "secondary.exe", hasTwoExecutables: true);
+
+        var result = TeknoParrotProfileScanner.RegisterGames(fixture.Settings, dryRun: false);
+
+        Assert.True(result.Success);
+        Assert.Single(result.Registered);
+        var profilePath = Path.Combine(fixture.UserProfilesPath, "TwinExe.xml");
+        var profileXml = File.ReadAllText(profilePath);
+        Assert.Contains(executable, profileXml);
+        Assert.Contains(secondary, profileXml);
+    }
+
+    [Fact]
     public void RepairGamePaths_updates_broken_profile_when_executable_match_is_unique()
     {
         using var fixture = new TeknoParrotFixture();
@@ -127,6 +163,25 @@ public class TeknoParrotProfileScannerTests
         Assert.Equal("fixed", repair.Status);
         Assert.Equal(executable, repair.NewPath);
         Assert.Contains(executable, File.ReadAllText(Path.Combine(fixture.UserProfilesPath, "Batman.xml")));
+    }
+
+    [Fact]
+    public void RepairGamePaths_dry_run_reports_fix_without_updating_profile()
+    {
+        using var fixture = new TeknoParrotFixture();
+        var oldPath = Path.Combine(fixture.RootPath, "Old", "Batman.exe");
+        var executable = fixture.WriteGameExecutable("Batman", "Batman.exe");
+        fixture.WriteProfileTemplate("Batman", "Batman Arcade", "Batman.exe");
+        fixture.WriteDescriptionProfile("Batman", "Batman Arcade", oldPath, "Batman.exe");
+
+        var result = TeknoParrotProfileScanner.RepairGamePaths(fixture.Settings, dryRun: true);
+
+        Assert.True(result.Success);
+        var repair = Assert.Single(result.Repairs);
+        Assert.Equal("fixed", repair.Status);
+        Assert.Equal(executable, repair.NewPath);
+        Assert.Contains(oldPath, File.ReadAllText(Path.Combine(fixture.UserProfilesPath, "Batman.xml")));
+        Assert.DoesNotContain(executable, File.ReadAllText(Path.Combine(fixture.UserProfilesPath, "Batman.xml")));
     }
 
     [Fact]

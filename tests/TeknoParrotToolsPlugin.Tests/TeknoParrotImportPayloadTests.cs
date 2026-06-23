@@ -59,4 +59,28 @@ public class TeknoParrotImportPayloadTests
         Assert.Contains("\"allowedExtensions\":\"exe|xml|zip\"", json);
         Assert.Contains("\"metadata\":", json);
     }
+
+    [Fact]
+    public async Task PreviewSync_action_returns_dry_run_payload_without_socket()
+    {
+        using var fixture = new TeknoParrotFixture();
+        fixture.WriteProfile("abc", "After Burner Climax", fixture.WriteGameExecutable("abc.exe"));
+
+        var response = await TeknoParrotToolsPluginMain.ProcessMessage(JsonSerializer.Serialize(new
+        {
+            method = "execute",
+            data = new
+            {
+                action = "preview_sync",
+                teknoparrotRootPath = fixture.RootPath,
+                gamesRootPath = Path.Combine(fixture.RootPath, "Games")
+            }
+        }));
+
+        var json = JsonSerializer.Serialize(response);
+        Assert.Contains("\"success\":true", json);
+        Assert.Contains("\"dry_run\":true", json);
+        Assert.Contains("\"games_found\":1", json);
+        Assert.Contains("\"payload\":", json);
+    }
 }

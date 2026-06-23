@@ -1,6 +1,6 @@
 # TeknoParrot Manager HyperSpin 2 Plugin
 
-![TeknoParrot Tools](banner.svg)
+<img src="icon.jpg" alt="TeknoParrot Tools" width="160">
 
 Standalone HyperSpin 2 / HyperHQ plugin for TeknoParrot profile maintenance and HyperHQ import.
 
@@ -54,7 +54,7 @@ That boundary is deliberate. HyperHQ should remain the launcher and library mana
 .
 |-- TeknoParrotHyperHQPlugin.sln
 |-- plugin.json
-|-- icon.svg
+|-- icon.jpg
 |-- CHANGELOG.md
 |-- src/
 |   |-- TeknoParrotToolsPlugin/
@@ -124,7 +124,7 @@ The ZIP contains only the HyperHQ runtime files:
 - `TeknoParrotToolsPlugin.exe`
 - `plugin.json`
 - `CHANGELOG.md`
-- `icon.svg`
+- `icon.jpg`
 - `Crosshairs/` (321 curated crosshair PNGs used by the crosshair deployment action)
 - Any additional root-level `*.json` files, if added later
 - Any `Icons/` folder, if added later

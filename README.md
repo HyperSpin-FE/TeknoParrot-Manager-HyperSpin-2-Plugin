@@ -1,5 +1,7 @@
 # TeknoParrot Manager HyperSpin 2 Plugin
 
+![TeknoParrot Tools](banner.svg)
+
 Standalone HyperSpin 2 / HyperHQ plugin for TeknoParrot profile maintenance and HyperHQ import.
 
 This repository packages the TeknoParrot tools plugin as its own buildable .NET project with a GitHub Actions release flow. It is intended to complement TeknoParrot and TeknoParrot Manager by exposing the HyperHQ-specific profile and import behavior as an optional plugin instead of baking that behavior directly into HyperHQ.

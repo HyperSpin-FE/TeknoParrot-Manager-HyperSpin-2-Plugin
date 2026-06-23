@@ -70,7 +70,7 @@
   "settings": [
     {
       "key": "teknoparrotRootPath",
-      "type": "string",
+      "type": "directory",
       "label": "TeknoParrot Folder",
       "description": "Folder containing TeknoParrotUi.exe, UserProfiles, GameProfiles, and Icons.",
       "defaultValue": "",
@@ -78,7 +78,7 @@
     },
     {
       "key": "executablePath",
-      "type": "string",
+      "type": "file",
       "label": "TeknoParrotUi.exe",
       "description": "Full path to TeknoParrotUi.exe. Leave empty to resolve from the TeknoParrot folder.",
       "defaultValue": "",
@@ -86,7 +86,7 @@
     },
     {
       "key": "userProfilesPath",
-      "type": "string",
+      "type": "directory",
       "label": "UserProfiles Folder",
       "description": "Folder containing configured TeknoParrot user profile XML files.",
       "defaultValue": "",
@@ -94,7 +94,7 @@
     },
     {
       "key": "gameProfilesPath",
-      "type": "string",
+      "type": "directory",
       "label": "GameProfiles Folder",
       "description": "Folder containing TeknoParrot's available game profile definitions.",
       "defaultValue": "",
@@ -102,7 +102,7 @@
     },
     {
       "key": "gamesRootPath",
-      "type": "string",
+      "type": "directory",
       "label": "Games Root Folder",
       "description": "Folder containing extracted TeknoParrot game folders used for profile registration and GamePath repair.",
       "defaultValue": "",
@@ -110,7 +110,7 @@
     },
     {
       "key": "iconsPath",
-      "type": "string",
+      "type": "directory",
       "label": "Icons Folder",
       "description": "Folder containing TeknoParrot icon files.",
       "defaultValue": "",
@@ -118,7 +118,7 @@
     },
     {
       "key": "backupPath",
-      "type": "string",
+      "type": "directory",
       "label": "Backup Folder",
       "description": "Folder where TeknoParrot Tools stores timestamped profile backups.",
       "defaultValue": "",
@@ -283,7 +283,7 @@
             "form": [
               {
                 "key": "teknoparrotRootPath",
-                "type": "string",
+                "type": "directory",
                 "label": "TeknoParrot Folder",
                 "placeholder": "C:\\TeknoParrot",
                 "helpText": "Folder containing TeknoParrotUi.exe, UserProfiles, GameProfiles, and Icons.",
@@ -291,28 +291,28 @@
               },
               {
                 "key": "executablePath",
-                "type": "string",
+                "type": "file",
                 "label": "TeknoParrotUi.exe",
                 "placeholder": "C:\\TeknoParrot\\TeknoParrotUi.exe",
                 "required": false
               },
               {
                 "key": "userProfilesPath",
-                "type": "string",
+                "type": "directory",
                 "label": "UserProfiles Folder",
                 "placeholder": "C:\\TeknoParrot\\UserProfiles",
                 "required": false
               },
               {
                 "key": "gameProfilesPath",
-                "type": "string",
+                "type": "directory",
                 "label": "GameProfiles Folder",
                 "placeholder": "C:\\TeknoParrot\\GameProfiles",
                 "required": false
               },
               {
                 "key": "gamesRootPath",
-                "type": "string",
+                "type": "directory",
                 "label": "Games Root Folder",
                 "placeholder": "D:\\Arcade\\TeknoParrot",
                 "helpText": "Optional. Used to register missing UserProfiles and repair broken GamePath values.",
@@ -320,14 +320,14 @@
               },
               {
                 "key": "iconsPath",
-                "type": "string",
+                "type": "directory",
                 "label": "Icons Folder",
                 "placeholder": "C:\\TeknoParrot\\Icons",
                 "required": false
               },
               {
                 "key": "backupPath",
-                "type": "string",
+                "type": "directory",
                 "label": "Backup Folder",
                 "placeholder": "C:\\TeknoParrot\\Backups\\HyperHQ",
                 "required": false

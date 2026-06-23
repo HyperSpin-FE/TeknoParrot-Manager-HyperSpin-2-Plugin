@@ -14,6 +14,9 @@ public class PluginManifestTests
 
         Assert.Equal("teknoparrot-tools", root.GetProperty("id").GetString());
         Assert.Equal("TeknoParrot Tools", root.GetProperty("name").GetString());
+        Assert.Equal("TeknoParrotToolsPlugin.exe", root.GetProperty("executableProviders").GetProperty("windows").GetString());
+        Assert.Equal("CHANGELOG.md", root.GetProperty("changelog").GetString());
+        Assert.Contains("windows", root.GetProperty("platforms").EnumerateArray().Select(platform => platform.GetString()));
         var wizard = root.GetProperty("onboarding").GetProperty("wizards")[0];
         Assert.Equal("teknoparrot-tools-setup", wizard.GetProperty("id").GetString());
         Assert.Equal("first-run", wizard.GetProperty("autoStart").GetString());
@@ -33,6 +36,7 @@ public class PluginManifestTests
         Assert.Contains("sync_games", actions);
         Assert.Contains("backup_profiles", actions);
         Assert.Contains("restore_backup", actions);
+        Assert.Contains("get_status", actions);
 
         var runWizardAction = root.GetProperty("actions").EnumerateArray()
             .Single(action => action.GetProperty("id").GetString() == "run_setup_wizard");

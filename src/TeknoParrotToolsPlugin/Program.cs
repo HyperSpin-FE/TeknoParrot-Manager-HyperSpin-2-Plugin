@@ -1487,31 +1487,46 @@ public static class TeknoParrotProfileScanner
                 continue;
             }
 
-            var candidates = new List<string>();
-            var ambiguousProfile = false;
-            foreach (var alternative in GetExecutableAlternatives(executableName))
-            {
-                if (profileIndex.TryGetValue(alternative, out var templates) && templates.Count > 1)
-                {
-                    ambiguousProfile = true;
-                    break;
-                }
+            var alternatives = GetExecutableAlternatives(executableName).ToArray();
 
-                if (gameFiles.TryGetValue(alternative, out var files))
-                {
-                    candidates.AddRange(files);
-                }
-            }
-
-            if (ambiguousProfile || candidates.Count > 1)
+            // If any alternative name is shared by more than one profile in the
+            // library, the executable is inherently ambiguous -- never
+            // auto-assign it regardless of what's on disk.
+            var ambiguousProfile = alternatives.Any(alternative =>
+                profileIndex.TryGetValue(alternative, out var templates) && templates.Count > 1);
+            if (ambiguousProfile)
             {
                 reports.Add(new TeknoParrotRepairItem(Path.GetFileNameWithoutExtension(profilePath), "ambiguous", executableName, null));
                 continue;
             }
 
-            if (candidates.Count == 0)
+            // Try each alternative name against what's on disk, in order, and
+            // stop at the first one with any match -- mirrors the original
+            // tool exactly. Do NOT pool matches across every alternative: a
+            // profile listing "a.exe;b.exe" only ever has one of those two
+            // present on a given install, so accumulating both would falsely
+            // flag a clean single-file match as ambiguous if an unrelated
+            // file elsewhere in the games root happens to share the other
+            // alternative's name.
+            string[]? candidates = null;
+            foreach (var alternative in alternatives)
+            {
+                if (gameFiles.TryGetValue(alternative, out var files))
+                {
+                    candidates = files;
+                    break;
+                }
+            }
+
+            if (candidates is null)
             {
                 reports.Add(new TeknoParrotRepairItem(Path.GetFileNameWithoutExtension(profilePath), "not-found", executableName, null));
+                continue;
+            }
+
+            if (candidates.Length > 1)
+            {
+                reports.Add(new TeknoParrotRepairItem(Path.GetFileNameWithoutExtension(profilePath), "ambiguous", executableName, null));
                 continue;
             }
 

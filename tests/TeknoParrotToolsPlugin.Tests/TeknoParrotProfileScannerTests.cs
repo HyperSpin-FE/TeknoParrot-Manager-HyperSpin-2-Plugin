@@ -179,6 +179,28 @@ public class TeknoParrotProfileScannerTests
     }
 
     [Fact]
+    public void RepairGamePaths_uses_first_alternative_with_a_match_instead_of_pooling_across_alternatives()
+    {
+        using var fixture = new TeknoParrotFixture();
+        // Two unrelated files happen to satisfy two different alternative names from
+        // the same ExecutableName field: the real game's exe, and a same-named file
+        // belonging to a completely different, unrelated game elsewhere in the games
+        // root. Repair must use the first alternative with a match (here "Primary.exe")
+        // and ignore the other -- pooling matches across all alternatives would see two
+        // total candidates and wrongly report this as ambiguous instead of repairing it.
+        var correctExecutable = fixture.WriteGameExecutable("DualExeGame", "Primary.exe");
+        fixture.WriteGameExecutable("UnrelatedGame", "Secondary.exe");
+        fixture.WriteDescriptionProfile("DualExe", "Dual Exe Game", Path.Combine(fixture.RootPath, "Missing", "missing.exe"), "Primary.exe;Secondary.exe");
+
+        var result = TeknoParrotProfileScanner.RepairGamePaths(fixture.Settings, dryRun: false);
+
+        Assert.True(result.Success);
+        var repair = Assert.Single(result.Repairs);
+        Assert.Equal("fixed", repair.Status);
+        Assert.Equal(correctExecutable, repair.NewPath);
+    }
+
+    [Fact]
     public void RepairGamePaths_updates_broken_profile_when_executable_match_is_unique()
     {
         using var fixture = new TeknoParrotFixture();

@@ -8,9 +8,11 @@ namespace TeknoParrotToolsPlugin;
 // and their helpers from the original PowerShell tool. You bind ONE reference
 // game per control type ("archetype") in TeknoParrotUI; this copies those
 // bindings to every other profile of the same type, matched by button
-// function so a wheel value never lands on a gun. An archetype is never
-// itself modified -- see the v0.99.12 regression note on
-// PropagateControls below before changing that.
+// function so a wheel value never lands on a gun. A reference game's own
+// button bindings are never touched. Its Input API setting is also left
+// alone UNLESS the user explicitly names it as the wrong one via the
+// canonicalArchetype override -- see the v0.99.12 regression note on
+// PropagateControlsCore below before changing either of those rules.
 public static partial class TeknoParrotProfileScanner
 {
     private static readonly HashSet<string> KnownControlFamilies = new(StringComparer.OrdinalIgnoreCase)
@@ -64,6 +66,18 @@ public static partial class TeknoParrotProfileScanner
                 else
                 {
                     log?.Invoke($"ControlOverrides: familyOverride for '{code}' has unknown family '{family}' -- ignored.");
+                }
+            }
+
+            foreach (var (family, code) in parsed.CanonicalArchetype ?? new Dictionary<string, string>())
+            {
+                if (KnownControlFamilies.Contains(family))
+                {
+                    result.CanonicalArchetype[family] = code;
+                }
+                else
+                {
+                    log?.Invoke($"ControlOverrides: canonicalArchetype has unknown family '{family}' -- ignored.");
                 }
             }
 
@@ -514,14 +528,15 @@ public static partial class TeknoParrotProfileScanner
         string userProfilesDir, List<ArchetypeEntry> pool, int minBound, ControlOverrides overrides, bool dryRun)
     {
         var items = new List<ControlPropagationItem>();
-        var sourcePaths = new HashSet<string>(pool.Select(s => s.Path), StringComparer.OrdinalIgnoreCase);
+        var poolByPath = pool.ToDictionary(s => s.Path, s => s, StringComparer.OrdinalIgnoreCase);
 
         foreach (var path in Directory.EnumerateFiles(userProfilesDir, "*.xml", SearchOption.TopDirectoryOnly))
         {
             var code = Path.GetFileNameWithoutExtension(path);
 
-            if (sourcePaths.Contains(path))
+            if (poolByPath.TryGetValue(path, out var self))
             {
+                TryCorrectCanonicalArchetypeApi(self, pool, overrides, dryRun, items);
                 continue;
             }
 
@@ -686,6 +701,52 @@ public static partial class TeknoParrotProfileScanner
         return items;
     }
 
+    // A reference game's bindings are never touched (see the note above
+    // PropagateControlsCore). Its Input API may only be corrected when the
+    // user has explicitly named, via the canonicalArchetype override, which
+    // one reference game in this control type is the correct one -- never a
+    // heuristic guess. Ported from teknoparrot-manager commit 64b217c
+    // (issue #1 follow-up): lets a user fix a reference game that was itself
+    // bound on the wrong Input API, without reintroducing the v0.99.12
+    // auto-guess that broke an unrelated, correctly-configured reference
+    // game.
+    private static void TryCorrectCanonicalArchetypeApi(
+        ArchetypeEntry self, List<ArchetypeEntry> pool, ControlOverrides overrides, bool dryRun, List<ControlPropagationItem> items)
+    {
+        if (!overrides.CanonicalArchetype.TryGetValue(self.Family, out var canonicalCode) || self.Code == canonicalCode)
+        {
+            return;
+        }
+
+        var canonical = pool.FirstOrDefault(s => s.Code == canonicalCode);
+        if (canonical?.InputApi is null || canonical.InputApi == self.InputApi)
+        {
+            return;
+        }
+
+        XDocument document;
+        try
+        {
+            document = XDocument.Load(self.Path);
+        }
+        catch
+        {
+            return;
+        }
+
+        if (document.Root is null || !SetProfileInputApi(document, canonical.InputApi))
+        {
+            return;
+        }
+
+        if (!dryRun)
+        {
+            SaveProfileDocument(document, self.Path);
+        }
+
+        items.Add(ControlPropagationItem.ApiFixedCanonical(self.Code, canonical.Code, canonical.InputApi));
+    }
+
     // Resolves which device to recommend for each control family from what
     // the user says they have, preferring the purpose-built control and
     // falling back to the most versatile available. Read-only guidance: it
@@ -768,6 +829,12 @@ public sealed class ControlOverrides
     public Dictionary<string, string> ForceArchetype { get; init; } = new(StringComparer.OrdinalIgnoreCase);
     public Dictionary<string, string> FamilyOverride { get; init; } = new(StringComparer.OrdinalIgnoreCase);
 
+    // Keyed by control type (button/driving/lightgun/trackball/analog/spinner),
+    // valued by the profile code of the one reference game in that type whose
+    // Input API is correct. Every other reference game in the same type gets
+    // its own Input API corrected to match -- see TryCorrectCanonicalArchetypeApi.
+    public Dictionary<string, string> CanonicalArchetype { get; init; } = new(StringComparer.OrdinalIgnoreCase);
+
     public static readonly ControlOverrides Empty = new();
 }
 
@@ -779,6 +846,7 @@ internal sealed class ControlOverridesFile
     public string[]? NoPropagate { get; set; }
     public Dictionary<string, string>? ForceArchetype { get; set; }
     public Dictionary<string, string>? FamilyOverride { get; set; }
+    public Dictionary<string, string>? CanonicalArchetype { get; set; }
 }
 
 internal sealed record ArchetypeEntry(
@@ -809,6 +877,8 @@ public sealed record ControlPropagationItem(
     public static ControlPropagationItem NoArchetype(string code, string family) => new(code, "no-archetype", Family: family);
     public static ControlPropagationItem ApiFixed(string code, string archetype, string? archetypeApi) =>
         new(code, "api-fixed", Archetype: archetype, ArchetypeApi: archetypeApi);
+    public static ControlPropagationItem ApiFixedCanonical(string code, string archetype, string? archetypeApi) =>
+        new(code, "api-fixed-canonical", Archetype: archetype, ArchetypeApi: archetypeApi);
 
     public static ControlPropagationItem CreateBound(
         string code, string family, string archetype, string? archetypeApi, bool apiSet, int bound,

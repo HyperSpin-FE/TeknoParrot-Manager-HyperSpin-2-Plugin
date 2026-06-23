@@ -339,6 +339,58 @@ public class TeknoParrotProfileScannerTests
     }
 
     [Fact]
+    public void PropagateControls_corrects_a_reference_games_own_input_api_when_canonicalArchetype_names_a_different_one()
+    {
+        using var fixture = new TeknoParrotFixture();
+        fixture.Settings.MinBoundForArchetype = 1;
+
+        // Two driving reference games with conflicting Input API settings --
+        // the user has decided DrivingCanonical is the correct one.
+        var canonicalPath = fixture.WriteControlProfile(
+            "DrivingCanonical", "RawInput", new[] { "RawInput", "DirectInput", "XInput" },
+            new TeknoParrotFixture.ControlButton("P1AnalogX", "Wheel", Bound: true));
+        var wrongPath = fixture.WriteControlProfile(
+            "DrivingWrongApi", "DirectInput", new[] { "RawInput", "DirectInput", "XInput" },
+            new TeknoParrotFixture.ControlButton("P1AnalogX", "Wheel", Bound: true));
+        var canonicalBefore = File.ReadAllText(canonicalPath);
+
+        var overrides = new ControlOverrides { CanonicalArchetype = { ["driving"] = "DrivingCanonical" } };
+        var result = TeknoParrotProfileScanner.PropagateControls(fixture.Settings, overrides, dryRun: false);
+
+        var corrected = Assert.Single(result.Items, item => item.Code == "DrivingWrongApi");
+        Assert.Equal("api-fixed-canonical", corrected.Status);
+        Assert.Equal("DrivingCanonical", corrected.Archetype);
+        Assert.Equal("RawInput", corrected.ArchetypeApi);
+        Assert.Contains("<FieldValue>RawInput</FieldValue>", File.ReadAllText(wrongPath));
+
+        // The designated canonical reference game itself is never touched.
+        Assert.Equal(canonicalBefore, File.ReadAllText(canonicalPath));
+        Assert.DoesNotContain(result.Items, item => item.Code == "DrivingCanonical");
+    }
+
+    [Fact]
+    public void PropagateControls_leaves_reference_games_alone_when_no_canonicalArchetype_override_is_set()
+    {
+        using var fixture = new TeknoParrotFixture();
+        fixture.Settings.MinBoundForArchetype = 1;
+
+        var firstPath = fixture.WriteControlProfile(
+            "DrivingFirst", "RawInput", new[] { "RawInput", "DirectInput", "XInput" },
+            new TeknoParrotFixture.ControlButton("P1AnalogX", "Wheel", Bound: true));
+        var secondPath = fixture.WriteControlProfile(
+            "DrivingSecond", "DirectInput", new[] { "RawInput", "DirectInput", "XInput" },
+            new TeknoParrotFixture.ControlButton("P1AnalogX", "Wheel", Bound: true));
+        var firstBefore = File.ReadAllText(firstPath);
+        var secondBefore = File.ReadAllText(secondPath);
+
+        var result = TeknoParrotProfileScanner.PropagateControls(fixture.Settings, ControlOverrides.Empty, dryRun: false);
+
+        Assert.Empty(result.Items);
+        Assert.Equal(firstBefore, File.ReadAllText(firstPath));
+        Assert.Equal(secondBefore, File.ReadAllText(secondPath));
+    }
+
+    [Fact]
     public void RunDeviceSurvey_recommends_a_wheel_for_driving_games_when_present()
     {
         var plan = TeknoParrotProfileScanner.RunDeviceSurvey(new DeviceSurveyAnswers(HasWheel: true, HasXbox: true));

@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.5.0
+
+- Add an optional `canonicalArchetype` field to the control-overrides JSON (`controlOverridesPath`): if two of your already-bound reference games for the same control type disagree on their Input API setting, this lets you name the one that's correct, and the plugin fixes the other one's Input API to match. A reference game's button bindings are still never touched -- only this one Input-API field, and only when you've explicitly said which reference game is right. Ported from teknoparrot-manager commit 64b217c (issue #1 follow-up); does not reintroduce the v0.99.12 heuristic-guess regression noted in 0.3.0 below.
+- Simplify control-propagation wording across the plugin UI and docs (settings, action buttons, README) to plain language for first-time users -- "reference game" instead of "archetype" wherever it's user-facing; the JSON override keys themselves (`forceArchetype`, `canonicalArchetype`, etc.) are unchanged for compatibility with the original tool's overrides file format.
+
 ## 0.4.0
 
 - Add crosshair deployment (ROADMAP.md Phase 2): deploys a chosen P1/P2 crosshair PNG pair to every registered lightgun game. ElfLdr2 and PCSX2x6 lightgun games share one emulator folder each and are deployed to once regardless of how many profiles use that emulator; PCSX2x6 additionally updates `PCSX2.ini`'s `cursor_path` for both USB ports (backing up the ini first). Standard games get the images copied next to their own executable.

@@ -1,7 +1,7 @@
 {
   "id": "teknoparrot-tools",
   "name": "TeknoParrot Tools",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "changelog": "CHANGELOG.md",
   "author": "HyperSpin Team",
   "type": "executable",
@@ -141,15 +141,15 @@
       "key": "controlOverridesPath",
       "type": "string",
       "label": "Control Overrides File (optional)",
-      "description": "Path to a JSON file with per-game control propagation tweaks: { \"noPropagate\": [...], \"forceArchetype\": {...}, \"familyOverride\": {...} }.",
+      "description": "Path to a JSON file for fine-tuning control-binding copying. All fields are optional: \"noPropagate\" (game codes to leave alone), \"forceArchetype\" (game code -> the specific already-bound game to copy from), \"familyOverride\" (game code -> control type, for games detected wrong), \"canonicalArchetype\" (control type -> the already-bound game whose Input API setting is correct, used to fix any other already-bound game of that type that disagrees).",
       "defaultValue": "",
       "required": false
     },
     {
       "key": "minBoundForArchetype",
       "type": "number",
-      "label": "Minimum Bound Buttons For Archetype",
-      "description": "A UserProfile needs at least this many bound buttons before control propagation will treat it as a reference game (archetype) for other profiles of the same type.",
+      "label": "Minimum Bound Buttons To Count As A Reference Game",
+      "description": "A game needs at least this many buttons already bound before the plugin will treat it as a reference game to copy bindings from for other games of the same control type.",
       "defaultValue": 5,
       "required": false
     },
@@ -238,20 +238,20 @@
     },
     {
       "id": "preview_control_propagation",
-      "label": "Preview Control Propagation",
-      "description": "Dry-run control binding propagation from your bound reference games to unbound profiles of the same type.",
+      "label": "Preview: Copy Controls To Other Games",
+      "description": "Shows what would happen if you copy button bindings from games you've already set up to other games of the same type (driving, lightgun, etc.) -- nothing is changed.",
       "icon": "eye",
       "type": "secondary",
       "confirmation": false
     },
     {
       "id": "propagate_controls",
-      "label": "Propagate Controls",
-      "description": "Copy control bindings from your bound reference games (archetypes) to unbound profiles of the same type, matched by button function. Reference games are never modified.",
+      "label": "Copy Controls To Other Games",
+      "description": "Copies button bindings from a game you've already bound to every other unbound game of the same type, matched button-by-button. The game you copy from is never changed.",
       "icon": "gamepad",
       "type": "primary",
       "confirmation": true,
-      "confirmationMessage": "This will copy control bindings from your bound reference games to unbound profiles of the same type. Existing profiles are backed up first. Continue?"
+      "confirmationMessage": "This will copy button bindings from games you've already bound to other unbound games of the same type. Existing profiles are backed up first. Continue?"
     },
     {
       "id": "preview_crosshairs",

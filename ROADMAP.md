@@ -9,28 +9,48 @@ refers to this file.
 
 ## Important boundary to resolve before Phase B starts
 
-The remaining features split into two groups with very different risk
-profiles:
+**Corrected after reading the actual source** (an earlier version of this
+section over-classified several phases as Group B without checking --
+verify against `tpm.ps1` before trusting old groupings in this file
+again):
 
-- **Group A -- no new permission needed.** Pure XML field manipulation or
-  deploying assets this plugin would bundle itself. Fits cleanly inside
-  the existing permission set.
-- **Group B -- downloads and runs third-party binaries.** ReShade,
-  dgVoodoo2, the GPU compatibility fix, the FFB plugin/Blaster, BepInEx,
-  and PostgreSQL setup all fetch a DLL/installer from GitHub or
-  reshade.me and place it on disk (Postgres setup also installs a Windows
-  service and creates a Windows user account). This directly contradicts
-  this plugin's own README Safety Notes line: *"The plugin does not
-  download, install, or modify third-party runtime binaries."* That line
-  was a deliberate design boundary in the adopted base, not an oversight.
+- **Group A -- no new permission needed.** Pure XML field manipulation,
+  local-only detection (WMI, file inspection), or deploying a file the
+  *user* already supplied via a settings path (same pattern as
+  `eggmanDatPath`/`crosshairsPath`). This covers more than it first
+  looks like:
+  - GPU compatibility fix -- 100% local (WMI GPU detection + profile field
+    toggle), no network at all.
+  - dgVoodoo2 setup -- 100% local. The user supplies the DLLs via a
+    settings path; the plugin only deploys and detects, never fetches.
+  - ReShade setup -- the DLL is also user-supplied. The *only* network
+    call is a read-only version-check GET to reshade.me (same risk tier
+    as the GitHub profile-list fetch already shipped in v0.2.0) --
+    needs one new read-only permission entry, not a boundary change.
+  - FFB Blaster (the paid-membership path) -- a confirmation prompt plus
+    a profile field toggle, no download.
+- **Group B -- downloads and runs a third-party binary the plugin fetches
+  itself.** Only three things actually do this:
+  - FFB's *free third-party plugin* path downloads a DLL from
+    `raw.githubusercontent.com/mightymikem/FFBArcadePlugin`.
+  - BepInEx update check downloads a release zip from GitHub's releases
+    API.
+  - PostgreSQL setup downloads and runs an installer, and creates a
+    Windows service and user account.
 
-Before any Group B phase is implemented, this needs an explicit decision:
-update the Safety Notes boundary and add the corresponding `permissions`
-entries to `plugin.json` (network + file-write scopes per feature, mirroring
-how the dat-index work added an explicit network permission entry), gated
-by per-feature settings so a user who never touches FFB/Postgres/etc. never
-has those permissions exercised. Group A has no such conflict and can
-proceed without that conversation.
+  These three directly contradict this plugin's README Safety Notes
+  line: *"The plugin does not download, install, or modify third-party
+  runtime binaries."* That line was a deliberate design boundary in the
+  adopted base, not an oversight.
+
+Before any of those three ship, they need an explicit decision: update
+the Safety Notes boundary and add the corresponding `permissions` entries
+to `plugin.json` (network + file-write scopes per feature, mirroring how
+the dat-index work added an explicit network permission entry), gated by
+per-feature settings so a user who never touches FFB's free plugin,
+BepInEx, or Postgres never has those permissions exercised. Everything
+else above has no such conflict and can proceed without that
+conversation -- including the rest of Phase 7 (FFB Blaster's paid path).
 
 ## Phase order
 
@@ -48,7 +68,13 @@ button-node comparison (`Get-ButtonNodes`/`Get-ButtonKey`/
 family/Input-API helpers (`Get-ProfileFamily`, `Get-ProfileInputApi`,
 `Set-ProfileInputApi`), and a device-survey wizard step (new `form`/
 `async-action` onboarding steps) feeding `noPropagate`/`forceArchetype`/
-`familyOverride` overrides.
+`familyOverride` overrides. Extended in v0.5.0 with `canonicalArchetype`
+(teknoparrot-manager commit 64b217c, issue #1 follow-up): an explicit,
+user-named exception to "reference games are never modified" that lets
+one reference game per control type be designated correct, so every
+other reference game of that type gets its own Input API setting
+corrected to match -- never a heuristic guess, to avoid repeating the
+v0.99.12 regression.
 
 ### Phase 2 -- Crosshair deployment (Group A) -- DONE (v0.4.0)
 Port `Invoke-CrosshairSetup` + `Export-CrosshairPreview` (tpm.ps1:2293,
@@ -63,21 +89,36 @@ Port `Invoke-CursorHideSetup` (tpm.ps1:2507). Pure profile XML field
 writes (PCSX2 cursor path fields per `Set-Pcsx2CursorPaths`, tpm.ps1:2241)
 -- no third-party downloads, no new permissions.
 
-### Phase 4 -- ReShade setup (Group B)
+### Phase 4 -- ReShade setup (Group A + one new read-only permission)
 Port `Invoke-ReShadeSetup` + `Test-ReShadeDllSignature` +
 `Get-ReShadeLatestVersion`/`Get-ReShadeTargetInfo` (tpm.ps1:1300, 1229,
-1262, 1275). Auto-detects 32/64-bit per game, verifies Authenticode
-signature before deploying, checks reshade.me for version drift.
+1262, 1275). The 64/32-bit DLLs are user-supplied via a settings path
+(new `reShadeSourceDll`/`reShadeSourceDll32`, same "user already has it"
+pattern as `eggmanDatPath`) -- this plugin does not download ReShade.
+Auto-detects 32/64-bit per game, verifies the DLL's Authenticode
+signature before deploying (continues with a warning if unsigned, since
+the user supplied it themselves), and does one read-only GET to
+reshade.me to report version drift (add a `network`/`external-api`
+permission entry for this, mirroring the existing GitHub profile-list
+fetch -- not a Safety Notes boundary change).
 
-### Phase 5 -- dgVoodoo2 setup (Group B)
+### Phase 5 -- dgVoodoo2 setup (Group A)
 Port `Invoke-DgVoodoo2Setup` + `Test-DgVoodoo2UpToDate` (tpm.ps1:1578,
-1563). DirectX 8/DirectDraw/Glide-to-DX11/12 interception layer.
+1563). DirectX 8/DirectDraw/Glide-to-DX11/12 interception layer. DLLs are
+user-supplied via a settings path (`dgVoodoo2SourceDir`); no network
+calls anywhere in this phase.
 
-### Phase 6 -- GPU compatibility fix (Group B)
+### Phase 6 -- GPU compatibility fix (Group A, despite the numbering -- corrected)
 Port `Invoke-GpuFixSetup` + `Get-DetectedGpuVendor` +
 `Get-GpuFixFieldNames`/`Test-GpuFixUpToDate` (tpm.ps1:2111, 1798, 1827,
-1932). Auto-detects AMD/NVIDIA/Intel and applies the matching profile
-field fix.
+1932). Auto-detects AMD/NVIDIA/Intel via a local WMI query
+(`Win32_VideoController`, no network) and applies the matching profile
+field fix -- pure XML field toggling, same category as cursor-hide.
+Originally miscategorized as Group B in this file; verified against the
+source and corrected. No third-party binary involved, no permission
+boundary blocker -- this phase doesn't actually need to wait for the
+Group B decision and could be pulled forward ahead of Phase 4/5 if
+useful.
 
 ### Phase 7 -- Force feedback (Group B)
 Port `Invoke-FFBBlasterSetup` + `Invoke-FFBPluginSetup` +

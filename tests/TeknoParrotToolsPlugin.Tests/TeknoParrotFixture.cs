@@ -158,6 +158,47 @@ internal sealed class TeknoParrotFixture : IDisposable
         return profilePath;
     }
 
+    public string WriteLightgunProfile(string profileName, string gamePath, string emulatorType = "", string? cursorFieldName = null, string cursorFieldValue = "0")
+    {
+        Directory.CreateDirectory(UserProfilesPath);
+        var profilePath = Path.Combine(UserProfilesPath, $"{profileName}.xml");
+
+        var sb = new System.Text.StringBuilder();
+        sb.AppendLine("<?xml version=\"1.0\" encoding=\"utf-8\"?>");
+        sb.AppendLine("<GameProfile>");
+        sb.AppendLine("  <GunGame>true</GunGame>");
+        sb.AppendLine($"  <EmulatorType>{emulatorType}</EmulatorType>");
+        sb.AppendLine($"  <GamePath>{gamePath}</GamePath>");
+        if (cursorFieldName is not null)
+        {
+            sb.AppendLine("  <ConfigValues>");
+            sb.AppendLine("    <FieldInformation>");
+            sb.AppendLine($"      <FieldName>{cursorFieldName}</FieldName>");
+            sb.AppendLine($"      <FieldValue>{cursorFieldValue}</FieldValue>");
+            sb.AppendLine("    </FieldInformation>");
+            sb.AppendLine("  </ConfigValues>");
+        }
+        sb.AppendLine("</GameProfile>");
+
+        File.WriteAllText(profilePath, sb.ToString());
+        return profilePath;
+    }
+
+    public string WriteTestPng(string folder, string fileName)
+    {
+        Directory.CreateDirectory(folder);
+        var path = Path.Combine(folder, fileName);
+        File.WriteAllBytes(path, new byte[] { 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, 0, 0, 0, 0 });
+        return path;
+    }
+
+    public string CreateCrosshairsFolder()
+    {
+        var path = Path.Combine(tempRoot, "Crosshairs");
+        Directory.CreateDirectory(path);
+        return path;
+    }
+
     public string WriteEggmanDat(params (string GameName, string ProfileCode, string Executable)[] entries)
     {
         var datPath = Path.Combine(tempRoot, "collection.dat");

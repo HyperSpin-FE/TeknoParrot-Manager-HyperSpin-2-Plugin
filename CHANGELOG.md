@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.4.0
+
+- Add crosshair deployment (ROADMAP.md Phase 2): deploys a chosen P1/P2 crosshair PNG pair to every registered lightgun game. ElfLdr2 and PCSX2x6 lightgun games share one emulator folder each and are deployed to once regardless of how many profiles use that emulator; PCSX2x6 additionally updates `PCSX2.ini`'s `cursor_path` for both USB ports (backing up the ini first). Standard games get the images copied next to their own executable.
+- Bundles the original tool's 321 curated crosshair PNGs in the release package's `Crosshairs/` folder. The optional `crosshairsPath` setting points at a different folder instead if you have your own set.
+- Add a crosshair preview action that validates every PNG (checks the real file signature, not just the extension) and writes a browsable HTML grid.
+- Add cursor-hide setup (ROADMAP.md Phase 3): sets the cursor-hide field in every registered lightgun profile that defines one, skipping profiles that have no such field or are already set. Can also be run automatically right after deploying crosshairs.
+- Simplify the first-run wizard's TeknoParrot Paths step: the four fields that are normally just subfolders of TeknoParrot Folder (`TeknoParrotUi.exe`, `UserProfiles`, `GameProfiles`, `Icons`) are now visually demoted to "(advanced override)" fields at the bottom of the form, since showing all seven fields at once made them look redundant.
+
 ## 0.3.0
 
 - Add control binding propagation (ROADMAP.md Phase 1): copies control bindings from a bound reference game ("archetype") to unbound profiles of the same control type (driving/lightgun/trackball/analog/button), matched by button function so a wheel value never lands on a gun. Carries the archetype's Input API and input-behaviour config (aim mode, sensitivity, axis handling) to the target, but only fields the target also defines. Reference games are never modified -- including their own Input API, deliberately, after a real regression in the original tool where "correcting" an archetype's API against an unrelated best-overlap match silently flipped a user's deliberately-configured profile.

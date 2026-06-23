@@ -21,6 +21,8 @@ decide what's worth porting. See ROADMAP.md for what's already ported.
 - Repairs broken or empty `GamePath` values only when the matching executable is unambiguous.
 - Propagates control bindings from a bound reference game ("archetype") to unbound profiles of the same control type (driving/lightgun/trackball/analog/button), matched by button function so a wheel value never lands on a gun. Reference games are never modified. An optional control-overrides JSON file (`controlOverridesPath`) can pin a game to a specific archetype, override its auto-detected control family, or exclude it from propagation entirely.
 - Offers a read-only device survey that recommends which control to bind for each game type based on what devices you have.
+- Deploys a chosen pair of P1/P2 crosshair images (321 bundled, or your own via `crosshairsPath`) to every registered lightgun game, including ElfLdr2 and PCSX2 (with `PCSX2.ini` `cursor_path` updates) special cases, and generates an HTML preview grid to browse them.
+- Hides the Windows cursor for every registered lightgun game that defines a cursor-hide field.
 - Backs up and restores profile XML files, including a pre-restore backup before overwrite.
 - Creates and syncs the canonical HyperHQ system `Arcade (TeknoParrot)`.
 - Imports TeknoParrot profile XML files as launchable HyperHQ games.
@@ -30,8 +32,8 @@ decide what's worth porting. See ROADMAP.md for what's already ported.
 
 TeknoParrot Manager includes many broader Windows setup and game-modification workflows. This plugin intentionally keeps the HyperHQ surface narrower:
 
-- Included: profile discovery, missing profile registration (with dat-index and profile-code fuzzy fallback), unique path repair, control binding propagation, device survey, health reporting, backups, HyperHQ system/emulator/game import, and wizard/button integration.
-- Not included yet: crosshair deployment, cursor-hide setup, ReShade installation, dgVoodoo2 setup, GPU fixes, FFB setup, Postgres setup, and BepInEx deployment. See ROADMAP.md.
+- Included: profile discovery, missing profile registration (with dat-index and profile-code fuzzy fallback), unique path repair, control binding propagation, device survey, crosshair deployment, cursor-hide setup, health reporting, backups, HyperHQ system/emulator/game import, and wizard/button integration.
+- Not included yet: ReShade installation, dgVoodoo2 setup, GPU fixes, FFB setup, Postgres setup, and BepInEx deployment. See ROADMAP.md.
 
 That boundary is deliberate. HyperHQ should remain the launcher and library manager, while the plugin extends TeknoParrot support where HyperHQ needs structured profile and import behavior.
 
@@ -121,6 +123,7 @@ The ZIP contains only the HyperHQ runtime files:
 - `plugin.json`
 - `CHANGELOG.md`
 - `icon.svg`
+- `Crosshairs/` (321 curated crosshair PNGs used by the crosshair deployment action)
 - Any additional root-level `*.json` files, if added later
 - Any `Icons/` folder, if added later
 
@@ -153,6 +156,9 @@ Supported execute actions:
 - `device_survey`
 - `preview_control_propagation`
 - `propagate_controls`
+- `preview_crosshairs`
+- `deploy_crosshairs`
+- `hide_cursor`
 - `preview_sync`
 - `sync_games`
 - `backup_profiles`

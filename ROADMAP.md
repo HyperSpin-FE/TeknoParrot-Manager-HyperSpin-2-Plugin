@@ -50,7 +50,7 @@ family/Input-API helpers (`Get-ProfileFamily`, `Get-ProfileInputApi`,
 `async-action` onboarding steps) feeding `noPropagate`/`forceArchetype`/
 `familyOverride` overrides.
 
-### Phase 2 -- Crosshair deployment (Group A)
+### Phase 2 -- Crosshair deployment (Group A) -- DONE (v0.4.0)
 Port `Invoke-CrosshairSetup` + `Export-CrosshairPreview` (tpm.ps1:2293,
 1063). The original ships 321 curated crosshair PNGs in a `Crosshairs/`
 folder plus an HTML preview; per the earlier base-adoption decision these
@@ -58,7 +58,7 @@ ship as packaged plugin assets under `assets/` (resolved, not revisited
 here -- see project memory). Maps to a `selection-list` wizard/action step
 since HyperHQ has no native image-preview step type.
 
-### Phase 3 -- Cursor-hide setup (Group A, smallest)
+### Phase 3 -- Cursor-hide setup (Group A, smallest) -- DONE (v0.4.0)
 Port `Invoke-CursorHideSetup` (tpm.ps1:2507). Pure profile XML field
 writes (PCSX2 cursor path fields per `Set-Pcsx2CursorPaths`, tpm.ps1:2241)
 -- no third-party downloads, no new permissions.

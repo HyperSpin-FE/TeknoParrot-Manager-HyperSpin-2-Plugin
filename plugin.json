@@ -1,7 +1,7 @@
 {
   "id": "teknoparrot-tools",
   "name": "TeknoParrot Tools",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "changelog": "CHANGELOG.md",
   "author": "HyperSpin Team",
   "type": "executable",
@@ -154,6 +154,14 @@
       "required": false
     },
     {
+      "key": "crosshairsPath",
+      "type": "string",
+      "label": "Crosshairs Folder (optional)",
+      "description": "Folder containing PNG crosshair files for lightgun setup. Leave empty to use the 321 crosshairs bundled with this plugin.",
+      "defaultValue": "",
+      "required": false
+    },
+    {
       "key": "downloadMedia",
       "type": "boolean",
       "label": "Download Media",
@@ -246,6 +254,32 @@
       "confirmationMessage": "This will copy control bindings from your bound reference games to unbound profiles of the same type. Existing profiles are backed up first. Continue?"
     },
     {
+      "id": "preview_crosshairs",
+      "label": "Preview Crosshairs",
+      "description": "Generate an HTML preview grid of all available crosshair PNGs (bundled, or from crosshairsPath if set).",
+      "icon": "eye",
+      "type": "secondary",
+      "confirmation": false
+    },
+    {
+      "id": "deploy_crosshairs",
+      "label": "Deploy Crosshairs",
+      "description": "Copy the chosen P1/P2 crosshair PNGs to every registered lightgun game, with optional cursor hiding.",
+      "icon": "crosshair",
+      "type": "primary",
+      "confirmation": true,
+      "confirmationMessage": "This will copy the chosen crosshair images into every registered lightgun game's folder (and PCSX2.ini, for PCSX2 lightgun games). Continue?"
+    },
+    {
+      "id": "hide_cursor",
+      "label": "Hide Cursor For Lightgun Games",
+      "description": "Sets the cursor-hide field in every registered lightgun profile. Existing profiles are backed up first.",
+      "icon": "mouse-off",
+      "type": "secondary",
+      "confirmation": true,
+      "confirmationMessage": "This will hide the Windows cursor for every registered lightgun game that supports it. Existing profiles are backed up first. Continue?"
+    },
+    {
       "id": "preview_sync",
       "label": "Preview Import",
       "description": "Build a dry-run HyperHQ import payload without changing the database.",
@@ -330,7 +364,7 @@
           {
             "id": "paths",
             "title": "TeknoParrot Paths",
-            "description": "Choose the TeknoParrot folder or provide the UserProfiles path directly.",
+            "description": "Point at your TeknoParrot folder. TeknoParrotUi.exe, UserProfiles, GameProfiles, and Icons are all found automatically from there -- you only need to fill in the fields below it if your setup is non-standard.",
             "type": "form",
             "buttonText": "Validate paths",
             "executeOnNext": true,
@@ -340,28 +374,7 @@
                 "type": "string",
                 "label": "TeknoParrot Folder",
                 "placeholder": "C:\\TeknoParrot",
-                "helpText": "Folder containing TeknoParrotUi.exe, UserProfiles, GameProfiles, and Icons.",
-                "required": false
-              },
-              {
-                "key": "executablePath",
-                "type": "string",
-                "label": "TeknoParrotUi.exe",
-                "placeholder": "C:\\TeknoParrot\\TeknoParrotUi.exe",
-                "required": false
-              },
-              {
-                "key": "userProfilesPath",
-                "type": "string",
-                "label": "UserProfiles Folder",
-                "placeholder": "C:\\TeknoParrot\\UserProfiles",
-                "required": false
-              },
-              {
-                "key": "gameProfilesPath",
-                "type": "string",
-                "label": "GameProfiles Folder",
-                "placeholder": "C:\\TeknoParrot\\GameProfiles",
+                "helpText": "The folder containing TeknoParrotUi.exe. Everything else on this page is found automatically from here unless you override it below.",
                 "required": false
               },
               {
@@ -369,14 +382,7 @@
                 "type": "string",
                 "label": "Games Root Folder",
                 "placeholder": "D:\\Arcade\\TeknoParrot",
-                "helpText": "Optional. Used to register missing UserProfiles and repair broken GamePath values.",
-                "required": false
-              },
-              {
-                "key": "iconsPath",
-                "type": "string",
-                "label": "Icons Folder",
-                "placeholder": "C:\\TeknoParrot\\Icons",
+                "helpText": "Where your extracted games live (not a TeknoParrot subfolder). Optional -- used to register missing UserProfiles and repair broken GamePath values.",
                 "required": false
               },
               {
@@ -384,14 +390,47 @@
                 "type": "string",
                 "label": "Backup Folder",
                 "placeholder": "C:\\TeknoParrot\\Backups\\HyperHQ",
+                "helpText": "Where this plugin saves a timestamped copy of your profiles before any change. Defaults to a Backups\\HyperHQ folder under TeknoParrot Folder.",
                 "required": false
               },
               {
                 "key": "eggmanDatPath",
                 "type": "string",
-                "label": "Collection Dat File",
+                "label": "Collection Dat File (advanced)",
                 "placeholder": "C:\\TeknoParrot\\Eggman\\collection.dat",
                 "helpText": "Optional. Point at a collection .dat or .zip you already have to help registration resolve shared-executable games. Not downloaded by this plugin.",
+                "required": false
+              },
+              {
+                "key": "executablePath",
+                "type": "string",
+                "label": "TeknoParrotUi.exe (advanced override)",
+                "placeholder": "C:\\TeknoParrot\\TeknoParrotUi.exe",
+                "helpText": "Only needed if TeknoParrotUi.exe isn't directly inside TeknoParrot Folder.",
+                "required": false
+              },
+              {
+                "key": "userProfilesPath",
+                "type": "string",
+                "label": "UserProfiles Folder (advanced override)",
+                "placeholder": "C:\\TeknoParrot\\UserProfiles",
+                "helpText": "Only needed if UserProfiles isn't directly inside TeknoParrot Folder.",
+                "required": false
+              },
+              {
+                "key": "gameProfilesPath",
+                "type": "string",
+                "label": "GameProfiles Folder (advanced override)",
+                "placeholder": "C:\\TeknoParrot\\GameProfiles",
+                "helpText": "Only needed if GameProfiles isn't directly inside TeknoParrot Folder.",
+                "required": false
+              },
+              {
+                "key": "iconsPath",
+                "type": "string",
+                "label": "Icons Folder (advanced override)",
+                "placeholder": "C:\\TeknoParrot\\Icons",
+                "helpText": "Only needed if Icons isn't directly inside TeknoParrot Folder.",
                 "required": false
               }
             ]

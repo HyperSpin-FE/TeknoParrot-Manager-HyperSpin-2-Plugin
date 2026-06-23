@@ -14,7 +14,7 @@ public static class TeknoParrotToolsPluginMain
 {
     internal const string PluginId = "teknoparrot-tools";
     internal const string PluginName = "TeknoParrot Tools";
-    internal const string PluginVersion = "0.3.0";
+    internal const string PluginVersion = "0.4.0";
     internal const string WizardId = "teknoparrot-tools-setup";
     internal const string TeknoParrotSystemName = "Arcade (TeknoParrot)";
     internal const string TeknoParrotSystemReferenceId = "97d957bb-1490-4c1f-b698-08dd285234a8";
@@ -301,6 +301,48 @@ public static class TeknoParrotToolsPluginMain
         return TeknoParrotProfileScanner.RunDeviceSurvey(answers);
     }
 
+    private static object PreviewCrosshairs(JsonElement data)
+    {
+        settings = MergeSettings(settings, data);
+        return TeknoParrotProfileScanner.PreviewCrosshairs(settings);
+    }
+
+    private static object DeployCrosshairs(JsonElement data)
+    {
+        settings = MergeSettings(settings, data);
+        var p1Name = GetString(data, "p1Name");
+        var p2Name = GetString(data, "p2Name");
+        if (string.IsNullOrWhiteSpace(p1Name) || string.IsNullOrWhiteSpace(p2Name))
+        {
+            return new { success = false, error = "p1Name and p2Name are required." };
+        }
+
+        var dryRun = GetBool(data, "dryRun") || GetBool(data, "dry_run");
+        var hideCursor = GetBool(data, "hideCursor");
+        var backup = dryRun ? null : TryBackupProfilesForMutation(settings);
+        if (backup is { Success: false })
+        {
+            return new { success = false, error = backup.Error };
+        }
+
+        var result = TeknoParrotProfileScanner.DeployCrosshairs(settings, p1Name, p2Name, hideCursor, dryRun, LogAsyncSink);
+        return new { result, backup_path = backup?.BackupPath };
+    }
+
+    private static object HideCursor(JsonElement data)
+    {
+        settings = MergeSettings(settings, data);
+        var dryRun = GetBool(data, "dryRun") || GetBool(data, "dry_run");
+        var backup = dryRun ? null : TryBackupProfilesForMutation(settings);
+        if (backup is { Success: false })
+        {
+            return new { success = false, error = backup.Error };
+        }
+
+        var result = TeknoParrotProfileScanner.HideCursorForLightgunGames(settings, dryRun);
+        return new { result, backup_path = backup?.BackupPath };
+    }
+
     private static object RepairGamePaths(JsonElement data)
     {
         settings = MergeSettings(settings, data);
@@ -335,6 +377,9 @@ public static class TeknoParrotToolsPluginMain
             "preview_control_propagation" => PreviewControlPropagation(data),
             "propagate_controls" => PropagateControls(data),
             "device_survey" => RunDeviceSurvey(data),
+            "preview_crosshairs" => PreviewCrosshairs(data),
+            "deploy_crosshairs" => DeployCrosshairs(data),
+            "hide_cursor" => HideCursor(data),
             "preview_sync" => await SyncGames(SetDryRun(data)),
             "sync_games" => await SyncGames(data),
             "backup_profiles" => BackupProfiles(settings),
@@ -986,6 +1031,7 @@ public sealed class TeknoParrotSettings
     public string EggmanDatPath { get; set; } = string.Empty;
     public string ControlOverridesPath { get; set; } = string.Empty;
     public int MinBoundForArchetype { get; set; } = 5;
+    public string CrosshairsPath { get; set; } = string.Empty;
     public bool DownloadMedia { get; set; } = true;
     public bool AutoSyncOnDbConnect { get; set; } = false;
 
@@ -1003,6 +1049,7 @@ public sealed class TeknoParrotSettings
             EggmanDatPath = TeknoParrotToolsPluginMain.FirstNonEmpty(other.EggmanDatPath, EggmanDatPath),
             ControlOverridesPath = TeknoParrotToolsPluginMain.FirstNonEmpty(other.ControlOverridesPath, ControlOverridesPath),
             MinBoundForArchetype = other.MinBoundForArchetype > 0 ? other.MinBoundForArchetype : MinBoundForArchetype,
+            CrosshairsPath = TeknoParrotToolsPluginMain.FirstNonEmpty(other.CrosshairsPath, CrosshairsPath),
             DownloadMedia = other.DownloadMedia,
             AutoSyncOnDbConnect = other.AutoSyncOnDbConnect
         };

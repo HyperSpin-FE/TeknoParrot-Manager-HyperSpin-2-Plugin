@@ -356,4 +356,94 @@ public class TeknoParrotProfileScannerTests
         Assert.Equal("your trackball (relative/mouse aim)", lightgun.BindWith);
         Assert.NotNull(plan.Note);
     }
+
+    [Fact]
+    public void IsValidPng_accepts_real_signature_and_rejects_garbage()
+    {
+        using var fixture = new TeknoParrotFixture();
+        var folder = fixture.CreateCrosshairsFolder();
+        var validPath = fixture.WriteTestPng(folder, "valid.png");
+        var garbagePath = Path.Combine(folder, "garbage.png");
+        File.WriteAllText(garbagePath, "not a png");
+
+        Assert.True(TeknoParrotProfileScanner.IsValidPng(validPath));
+        Assert.False(TeknoParrotProfileScanner.IsValidPng(garbagePath));
+    }
+
+    [Fact]
+    public void PreviewCrosshairs_lists_valid_pngs_skips_invalid_ones_and_writes_html_preview()
+    {
+        using var fixture = new TeknoParrotFixture();
+        var folder = fixture.CreateCrosshairsFolder();
+        fixture.WriteTestPng(folder, "Dot.png");
+        fixture.WriteTestPng(folder, "Cross.png");
+        File.WriteAllText(Path.Combine(folder, "NotAPng.png"), "garbage");
+        fixture.Settings.CrosshairsPath = folder;
+
+        var result = TeknoParrotProfileScanner.PreviewCrosshairs(fixture.Settings);
+
+        Assert.True(result.Success);
+        Assert.Equal(new[] { "Cross", "Dot" }, result.Valid.OrderBy(n => n));
+        Assert.Contains("NotAPng.png", result.Invalid);
+        Assert.NotNull(result.PreviewPath);
+        Assert.True(File.Exists(result.PreviewPath));
+        var html = File.ReadAllText(result.PreviewPath!);
+        Assert.Contains("Dot.png", html);
+        Assert.Contains("Cross.png", html);
+    }
+
+    [Fact]
+    public void DeployCrosshairs_copies_chosen_images_to_the_lightgun_games_folder()
+    {
+        using var fixture = new TeknoParrotFixture();
+        var folder = fixture.CreateCrosshairsFolder();
+        fixture.WriteTestPng(folder, "Dot.png");
+        fixture.WriteTestPng(folder, "Cross.png");
+        fixture.Settings.CrosshairsPath = folder;
+
+        var exePath = fixture.WriteGameExecutable("LethalEnforcers", "game.exe");
+        fixture.WriteLightgunProfile("LethalEnforcers", exePath);
+
+        var result = TeknoParrotProfileScanner.DeployCrosshairs(fixture.Settings, "Dot", "Cross", hideCursor: false, dryRun: false);
+
+        Assert.True(result.Success);
+        Assert.Equal(1, result.Deployed);
+        var exeDir = Path.GetDirectoryName(exePath)!;
+        Assert.True(File.Exists(Path.Combine(exeDir, "P1.png")));
+        Assert.True(File.Exists(Path.Combine(exeDir, "P2.png")));
+    }
+
+    [Fact]
+    public void DeployCrosshairs_fails_cleanly_when_a_named_crosshair_does_not_exist()
+    {
+        using var fixture = new TeknoParrotFixture();
+        var folder = fixture.CreateCrosshairsFolder();
+        fixture.WriteTestPng(folder, "Dot.png");
+        fixture.Settings.CrosshairsPath = folder;
+
+        var result = TeknoParrotProfileScanner.DeployCrosshairs(fixture.Settings, "Dot", "DoesNotExist", hideCursor: false, dryRun: false);
+
+        Assert.False(result.Success);
+        Assert.Contains(result.Errors, e => e.Contains("DoesNotExist"));
+    }
+
+    [Fact]
+    public void HideCursorForLightgunGames_sets_field_only_on_lightgun_profiles_that_define_it()
+    {
+        using var fixture = new TeknoParrotFixture();
+        var exePath = fixture.WriteGameExecutable("HasCursorField", "game.exe");
+        fixture.WriteLightgunProfile("HasCursorField", exePath, cursorFieldName: "HideCursor", cursorFieldValue: "0");
+
+        var exePath2 = fixture.WriteGameExecutable("NoCursorField", "game2.exe");
+        fixture.WriteLightgunProfile("NoCursorField", exePath2);
+
+        var result = TeknoParrotProfileScanner.HideCursorForLightgunGames(fixture.Settings, dryRun: false);
+
+        Assert.True(result.Success);
+        Assert.Equal(1, result.Updated);
+        Assert.Equal(1, result.NoField);
+
+        var xml = File.ReadAllText(Path.Combine(fixture.UserProfilesPath, "HasCursorField.xml"));
+        Assert.Contains("<FieldValue>1</FieldValue>", xml);
+    }
 }

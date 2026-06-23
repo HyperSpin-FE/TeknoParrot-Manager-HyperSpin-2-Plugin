@@ -181,6 +181,10 @@ jobs:
             throw 'No plugin icon files were found. Add icon.png, icon.svg, or an Icons folder.'
           }
 
+          if (Test-Path -LiteralPath 'Crosshairs') {
+            Copy-Item -LiteralPath 'Crosshairs' -Destination (Join-Path $packageDir 'Crosshairs') -Recurse
+          }
+
           $packageExeFiles = Get-ChildItem -Path $packageDir -File -Filter '*.exe'
           if ($packageExeFiles.Count -ne 1) {
             throw "Expected exactly one executable in the package, found $($packageExeFiles.Count)."
@@ -219,6 +223,7 @@ jobs:
           - `plugin.json`
           - `CHANGELOG.md`
           - Plugin icon files
+          - `Crosshairs/` (321 curated crosshair PNGs for lightgun setup)
 
           The executable is published as a Windows x64 self-contained single-file build.
           "@
